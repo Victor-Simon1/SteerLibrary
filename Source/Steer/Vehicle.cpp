@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "Vehicle.h"
 #include "Math/Vector.h"
+#include <iostream>
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -13,27 +14,64 @@ AVehicle::AVehicle()
 	max_force = 10.0;
 	mass = 10.0;
 	velocity = FVector();
-	state = StateVehicle::SEEK;
+	state = StateVehicle::MOVE;
 }
-
-void AVehicle::Seek(const FVector &target)
+void AVehicle::Move()
 {
-	FVector temp = target - this->GetActorLocation();
+	if (FVector::Dist(this->target, this->GetActorLocation())<1)
+	{
+		this->target = FVector(rand() % 2000, rand() % 200, 0);
+	}
+	FQuat rot;
+	SetActorLocationAndRotation(this->target,rot , false, 0, ETeleportType::None);
+}
+void AVehicle::Seek()
+{
+	FQuat rot;
+	FVector temp = this->target - this->GetActorLocation();
 	FVector desired_velocity = (FVector)temp.Normalize() * max_speed;
 	FVector steering = desired_velocity - velocity;
+	SetActorLocationAndRotation(steering, rot, false, 0, ETeleportType::None);
 }
-void AVehicle::Flee(const FVector& target)
+void AVehicle::Flee()
 {
-	FVector temp = target - this->GetActorLocation();
+	FQuat rot;
+	FVector temp = this->target - this->GetActorLocation();
 	FVector desired_velocity = (FVector)temp.Normalize() * max_speed;
 	FVector steering = -desired_velocity - velocity;
+	SetActorLocationAndRotation(steering, rot, false, 0, ETeleportType::None);
 }
-void AVehicle::Pursue(const FVector& target)
+void AVehicle::Pursue()
 {
-	FVector temp = target - this->GetActorLocation();
+	FQuat rot;
+	FVector temp = this->target - this->GetActorLocation();
 	FVector desired_velocity = (FVector)temp.Normalize() * max_speed;
 	FVector steering = desired_velocity - velocity;
+	SetActorLocationAndRotation(steering, rot, false, 0, ETeleportType::None);
 }
+
+void AVehicle::Evade()
+{
+	FQuat rot;
+	FVector temp = this->target - this->GetActorLocation();
+	FVector desired_velocity = (FVector)temp.Normalize() * max_speed;
+	FVector steering = desired_velocity - velocity;
+	SetActorLocationAndRotation(steering, rot, false, 0, ETeleportType::None);
+}
+
+void AVehicle::Arrival()
+{
+	FQuat rot;
+	FVector target_offset = this->target - this->GetActorLocation();
+	float distance = (target_offset.X+ target_offset.Y+ target_offset.Z) / 3;
+	float ramped_speed = max_speed * (distance / slowing_distance);
+	float clipped_speed = std::min(ramped_speed, max_speed);
+	FVector desired_velocity = (clipped_speed / distance) * target_offset;
+	FVector steering = desired_velocity - velocity;
+	SetActorLocationAndRotation(steering, rot, false, 0, ETeleportType::None);
+}
+
+
 // Called when the game starts or when spawned
 void AVehicle::BeginPlay()
 {
@@ -46,7 +84,8 @@ void AVehicle::BeginPlay()
 		// Use BindAction or BindAxis on the InputComponent to establish the bindings
 		FirstLocalPlayer->InputComponent->BindAction(FName("MyAction"), IE_Pressed, this, &AVehicle::OnActionPressed);
 	}
-	
+	this->target = FVector(100.0, 100.0, 0.0);
+	std::cout << "Init Vehicle" << std::endl;
 }
 void AVehicle::OnActionPressed()
 {
@@ -56,18 +95,21 @@ void AVehicle::OnActionPressed()
 void AVehicle::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	FVector target;
+	//FVector target;
+
 	switch (state)
 	{
 	case StateVehicle::SEEK:
-		Seek(target);
+		Seek();
 		break;
 	case StateVehicle::FLEE:
-		Flee(target);
+		Flee();
 		break;
 	case StateVehicle::PURSUE:
-		Pursue(target);
+		Pursue();
 		break;
+	default:
+		Move();
 	}
 
 }

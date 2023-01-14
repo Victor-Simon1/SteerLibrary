@@ -9,6 +9,7 @@
 
 enum class StateVehicle
 {
+	MOVE,
 	SEEK,
 	FLEE,
 	PURSUE
@@ -23,14 +24,20 @@ public:
 	float max_speed;
 	float mass;
 	FVector velocity;
+	UPROPERTY(EditAnywhere)
+	FVector target;
 	float max_force;
+	float slowing_distance;
 	StateVehicle state;
 	// Sets default values for this actor's properties
 	AVehicle();
 
-	void Seek(const FVector& target);
-	void Flee(const FVector& target);
-	void Pursue(const FVector& target);
+	void Seek();
+	void Flee();
+	void Pursue();
+	void Evade();
+	void Arrival();
+	void Move();
 
 protected:
 	// Called when the game starts or when spawned

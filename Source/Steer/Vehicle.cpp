@@ -10,20 +10,56 @@ AVehicle::AVehicle()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	max_speed = 10.0;
+	max_speed = 150.0;
 	max_force = 10.0;
+	vx = 0;
+	vy = 0;
 	mass = 10.0;
 	velocity = FVector();
+	acceleration = 2.0;
 	state = StateVehicle::MOVE;
 }
-void AVehicle::Move()
+void AVehicle::Move(float delta)
 {
-	if (FVector::Dist(this->target, this->GetActorLocation())<1)
+	//UE_LOG(LogTemp, Warning, TEXT(FVector::Dist(this->target, this->GetActorLocation())));
+	if (FVector::Dist(this->target, this->GetActorLocation())<50)
 	{
-		this->target = FVector(rand() % 2000, rand() % 200, 0);
+		UE_LOG(LogTemp, Warning, TEXT("New Target Vehicle"));
+		this->target = FVector(rand() % 2000, rand() % 200, 100.0);
+		state = static_cast<StateVehicle>(rand() % 4);
 	}
 	FQuat rot;
-	SetActorLocationAndRotation(this->target,rot , false, 0, ETeleportType::None);
+	FVector currentLocation = this->GetActorLocation();
+	FVector newLocation;
+	if (abs(currentLocation.X - this->target.X) > 20 && abs(currentLocation.Y - this->target.Y) > 20) {
+		if (abs(currentLocation.X - this->target.X) >= 20) {
+			if ((this->target.X - currentLocation.X) < 0)
+				velocity.X -= acceleration;
+			else
+				velocity.X += acceleration;
+		}
+
+		if (abs(currentLocation.Y - this->target.Y) >= 20) {
+			if ((this->target.Y - currentLocation.Y) < 0)
+				velocity.Y -= acceleration;
+			else
+				velocity.Y += acceleration;
+		}
+	}
+	if (velocity.X > max_speed)
+		velocity.X = max_speed;
+	else if (velocity.X < -max_speed)
+		velocity.X = -max_speed;
+	if (velocity.Y > max_speed)
+		velocity.Y = max_speed;
+	else if (velocity.Y < -max_speed)
+		velocity.Y = -max_speed;
+
+	newLocation.X = currentLocation.X + velocity.X * delta;
+	newLocation.Y = currentLocation.Y + velocity.Y * delta;
+	newLocation.Z = 100.0;
+	SetActorLocation(newLocation);
+	//SetActorLocationAndRotation(this->target,rot , false, 0, ETeleportType::None);
 }
 void AVehicle::Seek()
 {
@@ -76,20 +112,31 @@ void AVehicle::Arrival()
 void AVehicle::BeginPlay()
 {
 	Super::BeginPlay();
-	APlayerController* FirstLocalPlayer = UGameplayStatics::GetPlayerController(this, 0);
-
-	// Ensure that the PlayerController and its InputComponent are valid before binding
-	if (IsValid(FirstLocalPlayer) && IsValid(FirstLocalPlayer->InputComponent))
+	//APlayerController* FirstLocalPlayer = UGameplayStatics::GetPlayerController(this, 0);
+	//InputComponent->BindAction(FName("MyAction"), IE_Pressed, this, &AVehicle::OnActionPressed);
+	BindToInput();
+	this->target = FVector(100.0, 100.0, 100.0);
+	UE_LOG(LogTemp, Warning, TEXT("Init Vehicle"));
+}
+void AVehicle::BindToInput()
+{
+	// Initialize our component
+	InputComponent = NewObject<UInputComponent>(this);
+	InputComponent->RegisterComponent();
+	if (InputComponent)
 	{
-		// Use BindAction or BindAxis on the InputComponent to establish the bindings
-		FirstLocalPlayer->InputComponent->BindAction(FName("MyAction"), IE_Pressed, this, &AVehicle::OnActionPressed);
+		// Bind inputs here
+		InputComponent->BindAction("Jump", IE_Pressed, this, &AVehicle::OnActionPressed);
+		// etc...
+		UE_LOG(LogTemp, Warning, TEXT("Input Vehicle"));
+		// Now hook up our InputComponent to one in a Player
+		// Controller, so that input flows down to us
+		EnableInput(GetWorld()->GetFirstPlayerController());
 	}
-	this->target = FVector(100.0, 100.0, 0.0);
-	std::cout << "Init Vehicle" << std::endl;
 }
 void AVehicle::OnActionPressed()
 {
-	UE_LOG(LogTemp, Log, TEXT("Key Pressed"));
+	UE_LOG(LogTemp, Warning, TEXT("Key Pressed"));
 }
 // Called every frame
 void AVehicle::Tick(float DeltaTime)
@@ -109,7 +156,8 @@ void AVehicle::Tick(float DeltaTime)
 		Pursue();
 		break;
 	default:
-		Move();
+		Move(DeltaTime);
+		break;
 	}
 
 }

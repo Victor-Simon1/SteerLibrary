@@ -23,6 +23,8 @@ public:
 
 	float max_speed;
 	float mass;
+	float vx, vy;
+	float acceleration;
 	FVector velocity;
 	UPROPERTY(EditAnywhere)
 	FVector target;
@@ -37,12 +39,12 @@ public:
 	void Pursue();
 	void Evade();
 	void Arrival();
-	void Move();
-
+	void Move(float delta);
+	void BindToInput();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

@@ -17,7 +17,7 @@ AVehicle::AVehicle()
 	mass = 10.0;
 	velocity = FVector();
 	acceleration = 2.0;
-	state = StateVehicle::MOVE;
+	state = 0; //StateVehicle::MOVE;
 }
 void AVehicle::Move(float delta)
 {
@@ -26,7 +26,7 @@ void AVehicle::Move(float delta)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("New Target Vehicle"));
 		this->target = FVector(rand() % 2000, rand() % 200, 100.0);
-		state = static_cast<StateVehicle>(rand() % 4);
+		//state = rand() % 4;
 	}
 	FQuat rot;
 	FVector currentLocation = this->GetActorLocation();
@@ -146,13 +146,13 @@ void AVehicle::Tick(float DeltaTime)
 
 	switch (state)
 	{
-	case StateVehicle::SEEK:
+	case 0:
 		Seek();
 		break;
-	case StateVehicle::FLEE:
+	case 1:
 		Flee();
 		break;
-	case StateVehicle::PURSUE:
+	case 2:
 		Pursue();
 		break;
 	default:

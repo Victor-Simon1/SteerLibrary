@@ -6,14 +6,14 @@
 #include "GameFramework/Actor.h"
 #include "Vehicle.generated.h"
 
-
+/*
 enum class StateVehicle
 {
 	MOVE,
 	SEEK,
 	FLEE,
 	PURSUE
-};
+};*/
 UCLASS()
 class STEER_API AVehicle : public AActor
 {
@@ -30,7 +30,7 @@ public:
 	FVector target;
 	float max_force;
 	float slowing_distance;
-	StateVehicle state;
+	int state;//enum
 	// Sets default values for this actor's properties
 	AVehicle();
 

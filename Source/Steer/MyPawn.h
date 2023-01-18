@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
 #include "MyPawn.generated.h"
 
 UCLASS()
-class STEER_API AMyPawn : public APawn
+class STEER_API AMyPawn : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -22,7 +22,11 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	void Sprint();
+	void Walk();
+	void MoveForward(float Value);
+	void MoveRight(float Value);
+	void ChangeModeVehicle();
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 

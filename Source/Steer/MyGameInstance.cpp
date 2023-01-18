@@ -3,3 +3,7 @@
 
 #include "MyGameInstance.h"
 
+UMyGameInstance::UMyGameInstance()
+{
+	value = 0;
+}

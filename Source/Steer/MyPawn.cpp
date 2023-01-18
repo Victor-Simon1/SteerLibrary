@@ -2,7 +2,8 @@
 
 
 #include "MyPawn.h"
-
+#include "MyGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 // Sets default values
 AMyPawn::AMyPawn()
 {
@@ -43,8 +44,13 @@ void AMyPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AMyPawn::ChangeModeVehicle()
 {
+	UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (GI)
+	{
+		// Do Something
+		GI->value++;
+	}
 	
-	//GetGameInstance()->;
 }
 void AMyPawn::Sprint()
 {

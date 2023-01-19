@@ -29,6 +29,12 @@ void AMyPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//Set Gravity
+	/*FVector newLocation = this->GetActorLocation();
+	newLocation.Z = newLocation.Z - 50.0 ;
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Mode %f"), newLocation.Z));
+	SetActorLocation(newLocation);*/
 }
 
 // Called to bind functionality to input
@@ -37,6 +43,7 @@ void AMyPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	InputComponent->BindAction("Sprint", IE_Pressed, this, &AMyPawn::Sprint);
 	InputComponent->BindAction("Sprint", IE_Released, this, &AMyPawn::Walk);
+	InputComponent->BindAction("Mode", IE_Pressed, this, &AMyPawn::ChangeModeVehicle);
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMyPawn::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMyPawn::MoveRight);
 
@@ -45,11 +52,15 @@ void AMyPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 void AMyPawn::ChangeModeVehicle()
 {
 	UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	
 	if (GI)
 	{
-		// Do Something
-		GI->value++;
+		if (GI->value < GI->maxValue - 1)
+			GI->value++;
+		else GI->value = 0;
 	}
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Mode %d"), GI->value));
 	
 }
 void AMyPawn::Sprint()
@@ -68,14 +79,14 @@ void AMyPawn::Walk()
 void AMyPawn::MoveForward(float Value)
 {
 	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Move %f"),Value));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Move %f"),Value));
 	AddMovementInput(FVector::BackwardVector,Value);
 	
 }
 void AMyPawn::MoveRight(float Value)
 {
 	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Move %f"), Value));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Move %f"), Value));
 	AddMovementInput(FVector::RightVector, Value);
 
 }

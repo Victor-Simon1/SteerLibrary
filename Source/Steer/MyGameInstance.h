@@ -19,5 +19,6 @@ class STEER_API UMyGameInstance : public UGameInstance
 public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	int value;
+	int maxValue;
 	UMyGameInstance();
 };

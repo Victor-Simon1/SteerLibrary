@@ -77,7 +77,8 @@ void AVehicle::Seek(float delta)
 	
 	FVector desired_velocity = temp * max_speed;
 	FVector steering = desired_velocity - velocity;
-
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Mode %f %f"), steering.X,steering.Y));
 	if (steering.X > max_force)steering.X = max_force;
 	if (steering.Y > max_force)steering.Y = max_force;
 	steering /= mass;

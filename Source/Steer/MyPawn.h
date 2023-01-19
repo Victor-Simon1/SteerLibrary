@@ -26,6 +26,7 @@ public:
 	void Walk();
 	void MoveForward(float Value);
 	void MoveRight(float Value);
+	void RotateRight(float Value);
 	void ChangeModeVehicle();
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

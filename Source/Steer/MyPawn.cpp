@@ -46,9 +46,17 @@ void AMyPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	InputComponent->BindAction("Mode", IE_Pressed, this, &AMyPawn::ChangeModeVehicle);
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMyPawn::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMyPawn::MoveRight);
+	PlayerInputComponent->BindAxis("RotateRight", this, &AMyPawn::RotateRight);
 
 }
 
+void AMyPawn::RotateRight(float Value)
+{
+	FRotator NewRotation = FRotator(0.0, 0.0, 0.0);
+
+	FQuat QuatRotation = FQuat(NewRotation);
+	SetActorRotation(QuatRotation);
+}
 void AMyPawn::ChangeModeVehicle()
 {
 	UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));

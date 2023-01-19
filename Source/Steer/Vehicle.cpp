@@ -2,6 +2,7 @@
 #include "Vehicle.h"
 #include "Math/Vector.h"
 #include <iostream>
+#include <algorithm>
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -142,32 +143,126 @@ void AVehicle::Flee(float delta)
 }
 void AVehicle::Pursue(float delta)
 {
-	FQuat rot;
-	FVector temp = this->target - this->GetActorLocation();
-	FVector desired_velocity = (FVector)temp.Normalize() * max_speed;
+	FVector newLocation;
+	FVector currentLocation = this->GetActorLocation();
+	FVector temp = player->GetPawn()->GetActorLocation() - currentLocation;
+
+	if (velocity.X + acceleration < max_speed)
+	{
+		velocity.X = velocity.X + acceleration;
+		velocity.Y = velocity.Y + acceleration;
+	}
+
+	FVector desired_velocity = temp * max_speed;
 	FVector steering = desired_velocity - velocity;
-	SetActorLocationAndRotation(steering, rot, false, 0, ETeleportType::None);
+
+	if (steering.X > max_force)steering.X = max_force;
+	if (steering.Y > max_force)steering.Y = max_force;
+	steering /= mass;
+
+	if (velocity.X + steering.X > max_speed)
+		velocity.X = max_speed;
+	else if (velocity.X + steering.X < -max_speed)
+		velocity.X = -max_speed;
+	if (velocity.Y + steering.Y > max_speed)
+		velocity.Y = max_speed;
+	else if (velocity.Y + steering.Y < -max_speed)
+		velocity.Y = -max_speed;
+	else
+	{
+		velocity.X += steering.X;
+		velocity.Y += steering.Y;
+	}
+
+	newLocation.X = currentLocation.X + velocity.X * delta;
+	newLocation.Y = currentLocation.Y + velocity.Y * delta;
+	newLocation.Z = currentLocation.Z + velocity.Z * delta;
+	SetActorLocation(newLocation);
 }
 
 void AVehicle::Evade(float delta)
 {
-	FQuat rot;
-	FVector temp = this->target - this->GetActorLocation();
-	FVector desired_velocity = (FVector)temp.Normalize() * max_speed;
-	FVector steering = desired_velocity - velocity;
-	SetActorLocationAndRotation(steering, rot, false, 0, ETeleportType::None);
+	FVector newLocation;
+	FVector currentLocation = this->GetActorLocation();
+	FVector temp = player->GetPawn()->GetActorLocation() - currentLocation;
+
+	if (velocity.X + acceleration < max_speed)
+	{
+		velocity.X = velocity.X + acceleration;
+		velocity.Y = velocity.Y + acceleration;
+	}
+
+	FVector desired_velocity = temp * max_speed;
+	FVector steering = -desired_velocity - velocity;
+
+	if (steering.X > max_force)steering.X = max_force;
+	if (steering.Y > max_force)steering.Y = max_force;
+	steering /= mass;
+
+	if (velocity.X + steering.X > max_speed)
+		velocity.X = max_speed;
+	else if (velocity.X + steering.X < -max_speed)
+		velocity.X = -max_speed;
+	if (velocity.Y + steering.Y > max_speed)
+		velocity.Y = max_speed;
+	else if (velocity.Y + steering.Y < -max_speed)
+		velocity.Y = -max_speed;
+	else
+	{
+		velocity.X += steering.X;
+		velocity.Y += steering.Y;
+	}
+
+	newLocation.X = currentLocation.X + velocity.X * delta;
+	newLocation.Y = currentLocation.Y + velocity.Y * delta;
+	newLocation.Z = currentLocation.Z + velocity.Z * delta;
+	SetActorLocation(newLocation);
 }
 
+float Norm(FVector vec)
+{
+	return std::sqrt(vec.X* vec.X + vec.Y* vec.Y+ vec.Z*vec.Z);
+}
 void AVehicle::Arrival(float delta)
 {
-	FQuat rot;
-	FVector target_offset = this->target - this->GetActorLocation();
-	float distance = (target_offset.X+ target_offset.Y+ target_offset.Z) / 3;
+	FVector newLocation;
+	FVector currentLocation = this->GetActorLocation();
+	FVector temp = player->GetPawn()->GetActorLocation() - currentLocation;
+	FVector target_offset = player->GetPawn()->GetActorLocation() - currentLocation;
+	float distance = Norm(target_offset);
 	float ramped_speed = max_speed * (distance / slowing_distance);
 	float clipped_speed = std::min(ramped_speed, max_speed);
-	FVector desired_velocity = (clipped_speed / distance) * target_offset;
+	if (velocity.X + acceleration < max_speed)
+	{
+		velocity.X = velocity.X + acceleration;
+		velocity.Y = velocity.Y + acceleration;
+	}
+
+	FVector desired_velocity =(clipped_speed / distance) * target_offset;
 	FVector steering = desired_velocity - velocity;
-	SetActorLocationAndRotation(steering, rot, false, 0, ETeleportType::None);
+
+	if (steering.X > max_force)steering.X = max_force;
+	if (steering.Y > max_force)steering.Y = max_force;
+	steering /= mass;
+
+	if (velocity.X + steering.X > max_speed)
+		velocity.X = max_speed;
+	else if (velocity.X + steering.X < -max_speed)
+		velocity.X = -max_speed;
+	if (velocity.Y + steering.Y > max_speed)
+		velocity.Y = max_speed;
+	else if (velocity.Y + steering.Y < -max_speed)
+		velocity.Y = -max_speed;
+	else
+	{
+		velocity.X += steering.X;
+		velocity.Y += steering.Y;
+	}
+
+	newLocation.X = currentLocation.X + velocity.X * delta;
+	newLocation.Y = currentLocation.Y + velocity.Y * delta;
+	newLocation.Z = currentLocation.Z + velocity.Z * delta;
+	SetActorLocation(newLocation);
 }
 
 
@@ -222,6 +317,12 @@ void AVehicle::Tick(float DeltaTime)
 		Pursue(DeltaTime);
 		break;
 	case 3:
+		Evade(DeltaTime);
+		break;
+	case 4:
+		Arrival(DeltaTime);
+		break;
+	case 5:
 		Move(DeltaTime);
 		break;
 	}

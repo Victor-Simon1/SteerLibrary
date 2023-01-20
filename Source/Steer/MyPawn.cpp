@@ -3,12 +3,14 @@
 
 #include "MyPawn.h"
 #include "MyGameInstance.h"
+#include "StateVehicle.h"
 #include "Kismet/GameplayStatics.h"
 // Sets default values
 AMyPawn::AMyPawn()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	bUseControllerRotationYaw = false;
 	//GetGameInstance();
 }
 
@@ -52,10 +54,9 @@ void AMyPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AMyPawn::RotateRight(float Value)
 {
-	FRotator NewRotation = FRotator(0.0, 0.0, 0.0);
-
-	FQuat QuatRotation = FQuat(NewRotation);
-	SetActorRotation(QuatRotation);
+	if (GEngine)
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Je tourne"));
+	AddActorLocalRotation(FRotator(0.0, Value, 0.0));
 }
 void AMyPawn::ChangeModeVehicle()
 {
@@ -63,12 +64,16 @@ void AMyPawn::ChangeModeVehicle()
 	
 	if (GI)
 	{
-		if (GI->value < GI->maxValue - 1)
-			GI->value++;
-		else GI->value = 0;
+		if (static_cast<int>(GI->value) < GI->maxValue - 1)
+			GI->value = static_cast<StateVehicle>(static_cast<int>(GI->value)+1);
+		else GI->value = StateVehicle::MOVE;
 	}
+
 	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Mode %d"), GI->value));
+	{
+		NameState(GI->value);
+	}
+		
 	
 }
 void AMyPawn::Sprint()
@@ -88,7 +93,7 @@ void AMyPawn::MoveForward(float Value)
 {
 	if (GEngine)
 		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Move %f"),Value));
-	AddMovementInput(FVector::BackwardVector,Value);
+	AddMovementInput(FVector::ForwardVector,Value);
 	
 }
 void AMyPawn::MoveRight(float Value)

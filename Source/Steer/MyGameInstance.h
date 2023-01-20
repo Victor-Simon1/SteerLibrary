@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "StateVehicle.h"
 #include "MyGameInstance.generated.h"
 
 /**
@@ -18,7 +19,7 @@ class STEER_API UMyGameInstance : public UGameInstance
 
 public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	int value;
+	StateVehicle value;
 	int maxValue;
 	UMyGameInstance();
 };

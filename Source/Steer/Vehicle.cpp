@@ -15,15 +15,19 @@ AVehicle::AVehicle()
 	max_force = 10.0;
 	vx = 0;
 	vy = 0;
-	mass = 50.0;
+	mass = 1.0;
 	velocity = FVector(1.0,1.0,0.0);
-	acceleration = 1.0;
+	//acceleration = 1.0;
 	state = 0; //StateVehicle::MOVE;
-	
-	
+}
+FVector Truncate(FVector v, float m)
+{
+	if (v.Length() == 0)return v;
+	return (m * v) / v.Length();
 }
 void AVehicle::Move(float delta)
 {
+	float acceleration = 1.0;
 	//UE_LOG(LogTemp, Warning, TEXT(FVector::Dist(this->target, this->GetActorLocation())));
 	if (FVector::Dist(this->target, this->GetActorLocation())<50)
 	{
@@ -70,33 +74,15 @@ void AVehicle::Seek(float delta)
 	FVector currentLocation = this->GetActorLocation();
 	FVector temp = player->GetPawn()->GetActorLocation() - currentLocation;
 
-	if (velocity.X + acceleration < max_speed)
-	{
-		velocity.X = velocity.X + acceleration;
-		velocity.Y = velocity.Y + acceleration;
-	}
-	
 	FVector desired_velocity = temp * max_speed;
 	FVector steering = desired_velocity - velocity;
 
-	if (steering.X > max_force)steering.X = max_force;
-	if (steering.Y > max_force)steering.Y = max_force;
-	steering /= mass;
+	FVector steering_force = Truncate(steering, max_force);
 
-	if (velocity.X + steering.X > max_speed)
-		velocity.X = max_speed;
-	else if(velocity.X + steering.X < -max_speed)
-		velocity.X = -max_speed;
-	if (velocity.Y + steering.Y > max_speed)
-		velocity.Y = max_speed;
-	else if (velocity.Y + steering.Y < -max_speed)
-		velocity.Y = -max_speed;
-	else
-	{
-		velocity.X += steering.X;
-		velocity.Y += steering.Y;
-	}
-	
+	FVector acceleration = steering_force / mass;
+
+	velocity = Truncate(velocity+acceleration, max_speed);
+
 	newLocation.X = currentLocation.X + velocity.X * delta;
 	newLocation.Y = currentLocation.Y + velocity.Y * delta;
 	newLocation.Z = currentLocation.Z + velocity.Z * delta;
@@ -109,32 +95,14 @@ void AVehicle::Flee(float delta)
 	FVector currentLocation = this->GetActorLocation();
 	FVector temp = player->GetPawn()->GetActorLocation() - currentLocation;
 
-	if (velocity.X + acceleration < max_speed)
-	{
-		velocity.X = velocity.X + acceleration;
-		velocity.Y = velocity.Y + acceleration;
-	}
-
 	FVector desired_velocity = temp * max_speed;
 	FVector steering = -desired_velocity - velocity;
 
-	if (steering.X > max_force)steering.X = max_force;
-	if (steering.Y > max_force)steering.Y = max_force;
-	steering /= mass;
+	FVector steering_force = Truncate(steering, max_force);
 
-	if (velocity.X + steering.X > max_speed)
-		velocity.X = max_speed;
-	else if (velocity.X + steering.X < -max_speed)
-		velocity.X = -max_speed;
-	if (velocity.Y + steering.Y > max_speed)
-		velocity.Y = max_speed;
-	else if (velocity.Y + steering.Y < -max_speed)
-		velocity.Y = -max_speed;
-	else
-	{
-		velocity.X += steering.X;
-		velocity.Y += steering.Y;
-	}
+	FVector acceleration = steering_force / mass;
+
+	velocity = Truncate(velocity + acceleration, max_speed);
 
 	newLocation.X = currentLocation.X + velocity.X * delta;
 	newLocation.Y = currentLocation.Y + velocity.Y * delta;
@@ -147,33 +115,14 @@ void AVehicle::Pursue(float delta)
 	FVector currentLocation = this->GetActorLocation();
 	FVector temp = player->GetPawn()->GetActorLocation() - currentLocation;
 
-	if (velocity.X + acceleration < max_speed)
-	{
-		velocity.X = velocity.X + acceleration;
-		velocity.Y = velocity.Y + acceleration;
-	}
+	FVector steering = FVector::DotProduct(FVector::ForwardVector, player->GetPawn()->GetVelocity()) * temp;
+	FVector steering_force = Truncate(steering, max_force);
 
-	FVector desired_velocity = temp * max_speed;
-	FVector steering = desired_velocity - velocity;
+	FVector acceleration = steering_force / mass;
 
-	if (steering.X > max_force)steering.X = max_force;
-	if (steering.Y > max_force)steering.Y = max_force;
-	steering /= mass;
-
-	if (velocity.X + steering.X > max_speed)
-		velocity.X = max_speed;
-	else if (velocity.X + steering.X < -max_speed)
-		velocity.X = -max_speed;
-	if (velocity.Y + steering.Y > max_speed)
-		velocity.Y = max_speed;
-	else if (velocity.Y + steering.Y < -max_speed)
-		velocity.Y = -max_speed;
-	else
-	{
-		velocity.X += steering.X;
-		velocity.Y += steering.Y;
-	}
-
+	velocity = Truncate(velocity + acceleration, max_speed);
+	
+	//velocity *= estimation;
 	newLocation.X = currentLocation.X + velocity.X * delta;
 	newLocation.Y = currentLocation.Y + velocity.Y * delta;
 	newLocation.Z = currentLocation.Z + velocity.Z * delta;
@@ -182,7 +131,7 @@ void AVehicle::Pursue(float delta)
 
 void AVehicle::Evade(float delta)
 {
-	FVector newLocation;
+	/*FVector newLocation;
 	FVector currentLocation = this->GetActorLocation();
 	FVector temp = player->GetPawn()->GetActorLocation() - currentLocation;
 
@@ -216,16 +165,12 @@ void AVehicle::Evade(float delta)
 	newLocation.X = currentLocation.X + velocity.X * delta;
 	newLocation.Y = currentLocation.Y + velocity.Y * delta;
 	newLocation.Z = currentLocation.Z + velocity.Z * delta;
-	SetActorLocation(newLocation);
+	SetActorLocation(newLocation);*/
 }
 
-float Norm(FVector vec)
-{
-	return std::sqrt(vec.X* vec.X + vec.Y* vec.Y+ vec.Z*vec.Z);
-}
 void AVehicle::Arrival(float delta)
 {
-	FVector newLocation;
+	/*FVector newLocation;
 	FVector currentLocation = this->GetActorLocation();
 	FVector temp = player->GetPawn()->GetActorLocation() - currentLocation;
 	FVector target_offset = player->GetPawn()->GetActorLocation() - currentLocation;
@@ -258,11 +203,12 @@ void AVehicle::Arrival(float delta)
 		velocity.X += steering.X;
 		velocity.Y += steering.Y;
 	}
-
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Vel %d %d %d"),velocity.X,velocity.Y,velocity.Z));
 	newLocation.X = currentLocation.X + velocity.X * delta;
 	newLocation.Y = currentLocation.Y + velocity.Y * delta;
 	newLocation.Z = currentLocation.Z + velocity.Z * delta;
-	SetActorLocation(newLocation);
+	SetActorLocation(newLocation);*/
 }
 
 
@@ -307,22 +253,22 @@ void AVehicle::Tick(float DeltaTime)
 
 	switch (GI->value)
 	{
-	case 0:
+	case StateVehicle::SEEK:
 		Seek(DeltaTime);
 		break;
-	case 1:
+	case StateVehicle::FLEE:
 		Flee(DeltaTime);
 		break;
-	case 2:
+	case StateVehicle::PURSUE:
 		Pursue(DeltaTime);
 		break;
-	case 3:
+	case StateVehicle::EVADE:
 		Evade(DeltaTime);
 		break;
-	case 4:
+	case StateVehicle::ARRIVAL:
 		Arrival(DeltaTime);
 		break;
-	case 5:
+	case StateVehicle::MOVE:
 		Move(DeltaTime);
 		break;
 	}

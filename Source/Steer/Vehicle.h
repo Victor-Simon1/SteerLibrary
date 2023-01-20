@@ -7,14 +7,8 @@
 #include "MyGameInstance.h"
 #include "Vehicle.generated.h"
 
-/*
-enum class StateVehicle
-{
-	MOVE,
-	SEEK,
-	FLEE,
-	PURSUE
-};*/
+
+
 UCLASS()
 class STEER_API AVehicle : public AActor
 {
@@ -25,7 +19,7 @@ public:
 	float max_speed;
 	float mass;
 	float vx, vy;
-	float acceleration;
+	//float acceleration;
 	UPROPERTY(EditAnywhere)
 	FVector velocity;
 	UPROPERTY(EditAnywhere)

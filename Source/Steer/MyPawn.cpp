@@ -5,6 +5,7 @@
 #include "MyGameInstance.h"
 #include "StateVehicle.h"
 #include "Kismet/GameplayStatics.h"
+
 // Sets default values
 AMyPawn::AMyPawn()
 {
@@ -30,13 +31,26 @@ void AMyPawn::BeginPlay()
 void AMyPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	//Set Gravity
-	/*FVector newLocation = this->GetActorLocation();
-	newLocation.Z = newLocation.Z - 50.0 ;
 	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Mode %f"), newLocation.Z));
-	SetActorLocation(newLocation);*/
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Mode %s"), *MovementDirection.ToString()));
+	FVector newLocation;
+	if (!MovementDirection.IsZero())
+	{
+		newLocation = GetActorLocation() + (MovementDirection * DeltaTime * 50.0);
+		
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Mode %f"), newLocation.Z));
+		SetActorLocation(newLocation);
+	}
+
+	newLocation.Z = newLocation.Z - 50.0 * DeltaTime;
+	SetActorLocation(newLocation);
+	//Set Gravity
+	//FVector newLocation = this->GetActorLocation();
+	//newLocation.Z = newLocation.Z - 5.0*DeltaTime ;
+	//if (GEngine)
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Mode %f"), newLocation.Z));
+	//SetActorLocation(newLocation);
 }
 
 // Called to bind functionality to input
@@ -84,22 +98,21 @@ void AMyPawn::Sprint()
 }
 void AMyPawn::Walk()
 {
-
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Walk"));
 
 }
 void AMyPawn::MoveForward(float Value)
-{
-	if (GEngine)
+{		
+	//if (GEngine)
 		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Move %f"),Value));
-	AddMovementInput(FVector::ForwardVector,Value);
-	
+	//AddMovementInput(GetActorForwardVector(), Value);
+	MovementDirection.X = FMath::Clamp(Value, -1.0, 1.0);
 }
 void AMyPawn::MoveRight(float Value)
 {
-	if (GEngine)
+	//if (GEngine)
 		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Move %f"), Value));
-	AddMovementInput(FVector::RightVector, Value);
-
+	MovementDirection.Y = FMath::Clamp(Value, -1.0, 1.0);
 }
+

@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "GameFramework/Pawn.h"
 #include "MyPawn.generated.h"
 
 UCLASS()
-class STEER_API AMyPawn : public ACharacter
+class STEER_API AMyPawn : public APawn
 {
 	GENERATED_BODY()
 
@@ -20,6 +20,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+	//UStaticMeshComponent* mesh;
+	FVector MovementDirection;
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	void Sprint();

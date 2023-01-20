@@ -16,7 +16,6 @@ class STEER_API UCharacterMovement : public UObject
 	GENERATED_BODY()
 	
 public:
-//	float mass;
-	//vector<float> pos;
+
 
 };

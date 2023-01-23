@@ -12,8 +12,12 @@ enum class StateVehicle
 	SEEK,
 	FLEE,
 	PURSUE,
+	EVADE,
 	ARRIVAL,
-	EVADE
+	CIRCUIT,
+	ONEWAY,
+	TWOWAY
 };
 
 void NameState(StateVehicle state);
+bool MovableState(StateVehicle state);

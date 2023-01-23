@@ -31,26 +31,13 @@ void AMyPawn::BeginPlay()
 void AMyPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Mode %s"), *MovementDirection.ToString()));
 	FVector newLocation;
-	if (!MovementDirection.IsZero())
+	UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (!MovementDirection.IsZero() && MovableState(GI->value))
 	{
-		newLocation = GetActorLocation() + (MovementDirection * DeltaTime * 50.0);
-		
-		if (GEngine)
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Mode %f"), newLocation.Z));
+		newLocation = GetActorLocation() + (MovementDirection * DeltaTime * 500.0);
 		SetActorLocation(newLocation);
 	}
-
-	newLocation.Z = newLocation.Z - 50.0 * DeltaTime;
-	SetActorLocation(newLocation);
-	//Set Gravity
-	//FVector newLocation = this->GetActorLocation();
-	//newLocation.Z = newLocation.Z - 5.0*DeltaTime ;
-	//if (GEngine)
-		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Mode %f"), newLocation.Z));
-	//SetActorLocation(newLocation);
 }
 
 // Called to bind functionality to input
@@ -63,15 +50,8 @@ void AMyPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMyPawn::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMyPawn::MoveRight);
 	PlayerInputComponent->BindAxis("RotateRight", this, &AMyPawn::RotateRight);
-
 }
 
-void AMyPawn::RotateRight(float Value)
-{
-	if (GEngine)
-		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Je tourne"));
-	AddActorLocalRotation(FRotator(0.0, Value, 0.0));
-}
 void AMyPawn::ChangeModeVehicle()
 {
 	UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
@@ -87,12 +67,9 @@ void AMyPawn::ChangeModeVehicle()
 	{
 		NameState(GI->value);
 	}
-		
-	
 }
 void AMyPawn::Sprint()
 {
-
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Sprint"));
 }
@@ -100,19 +77,17 @@ void AMyPawn::Walk()
 {
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Walk"));
-
 }
 void AMyPawn::MoveForward(float Value)
 {		
-	//if (GEngine)
-		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Move %f"),Value));
-	//AddMovementInput(GetActorForwardVector(), Value);
 	MovementDirection.X = FMath::Clamp(Value, -1.0, 1.0);
 }
 void AMyPawn::MoveRight(float Value)
 {
-	//if (GEngine)
-		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Move %f"), Value));
 	MovementDirection.Y = FMath::Clamp(Value, -1.0, 1.0);
 }
 
+void AMyPawn::RotateRight(float Value)
+{
+	AddActorLocalRotation(FRotator(0.0, Value, 0.0));
+}

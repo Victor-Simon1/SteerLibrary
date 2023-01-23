@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <vector>
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "MyGameInstance.h"
@@ -18,14 +19,14 @@ public:
 
 	float max_speed;
 	float mass;
-	float vx, vy;
-	//float acceleration;
 	UPROPERTY(EditAnywhere)
 	FVector velocity;
 	UPROPERTY(EditAnywhere)
 	FVector target;
 	float max_force;
 	float slowing_distance;
+	std::vector<FVector> path;
+	int pathIndex;
 	int state;//enum
 	UMyGameInstance* GI; //= Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	APlayerController* player;
@@ -38,7 +39,9 @@ public:
 	void Evade(float delta);
 	void Arrival(float delta);
 	void Move(float delta);
-	void BindToInput();
+	void Circuit(float delta);
+	void OneWay(float delta);
+	void TwoWay(float delta);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

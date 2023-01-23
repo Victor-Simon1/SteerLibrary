@@ -13,12 +13,13 @@ AVehicle::AVehicle()
 
 	max_speed = 150.0;
 	max_force = 10.0;
-	vx = 0;
-	vy = 0;
 	mass = 1.0;
+	slowing_distance = 25.0;
 	velocity = FVector(1.0,1.0,0.0);
+	pathIndex = 0;
 	//acceleration = 1.0;
-	state = 0; //StateVehicle::MOVE;
+	//state = 0; //StateVehicle::MOVE;
+	
 }
 FVector Truncate(FVector v, float m)
 {
@@ -121,7 +122,7 @@ void AVehicle::Pursue(float delta)
 	FVector acceleration = steering_force / mass;
 
 	velocity = Truncate(velocity + acceleration, max_speed);
-	
+
 	//velocity *= estimation;
 	newLocation.X = currentLocation.X + velocity.X * delta;
 	newLocation.Y = currentLocation.Y + velocity.Y * delta;
@@ -131,116 +132,107 @@ void AVehicle::Pursue(float delta)
 
 void AVehicle::Evade(float delta)
 {
-	/*FVector newLocation;
+	FVector newLocation;
 	FVector currentLocation = this->GetActorLocation();
 	FVector temp = player->GetPawn()->GetActorLocation() - currentLocation;
 
-	if (velocity.X + acceleration < max_speed)
-	{
-		velocity.X = velocity.X + acceleration;
-		velocity.Y = velocity.Y + acceleration;
-	}
+	FVector steering = FVector::DotProduct(FVector::ForwardVector, player->GetPawn()->GetVelocity()) * temp;
+	FVector steering_force = Truncate(steering, max_force);
 
-	FVector desired_velocity = temp * max_speed;
-	FVector steering = -desired_velocity - velocity;
+	FVector acceleration = steering_force / mass;
+	
+	velocity = Truncate(velocity + acceleration, max_speed);
 
-	if (steering.X > max_force)steering.X = max_force;
-	if (steering.Y > max_force)steering.Y = max_force;
-	steering /= mass;
-
-	if (velocity.X + steering.X > max_speed)
-		velocity.X = max_speed;
-	else if (velocity.X + steering.X < -max_speed)
-		velocity.X = -max_speed;
-	if (velocity.Y + steering.Y > max_speed)
-		velocity.Y = max_speed;
-	else if (velocity.Y + steering.Y < -max_speed)
-		velocity.Y = -max_speed;
-	else
-	{
-		velocity.X += steering.X;
-		velocity.Y += steering.Y;
-	}
-
+	//velocity *= estimation;
 	newLocation.X = currentLocation.X + velocity.X * delta;
 	newLocation.Y = currentLocation.Y + velocity.Y * delta;
 	newLocation.Z = currentLocation.Z + velocity.Z * delta;
-	SetActorLocation(newLocation);*/
+	SetActorLocation(newLocation);
 }
 
 void AVehicle::Arrival(float delta)
 {
-	/*FVector newLocation;
+	FVector newLocation;
 	FVector currentLocation = this->GetActorLocation();
-	FVector temp = player->GetPawn()->GetActorLocation() - currentLocation;
+
 	FVector target_offset = player->GetPawn()->GetActorLocation() - currentLocation;
-	float distance = Norm(target_offset);
+	float distance = target_offset.Length();
 	float ramped_speed = max_speed * (distance / slowing_distance);
 	float clipped_speed = std::min(ramped_speed, max_speed);
-	if (velocity.X + acceleration < max_speed)
-	{
-		velocity.X = velocity.X + acceleration;
-		velocity.Y = velocity.Y + acceleration;
-	}
 
-	FVector desired_velocity =(clipped_speed / distance) * target_offset;
+
+	FVector desired_velocity = (clipped_speed / distance) * target_offset;
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Mode %s"), *desired_velocity.ToString()));
 	FVector steering = desired_velocity - velocity;
 
-	if (steering.X > max_force)steering.X = max_force;
-	if (steering.Y > max_force)steering.Y = max_force;
-	steering /= mass;
+	FVector steering_force = Truncate(steering, max_force);
 
-	if (velocity.X + steering.X > max_speed)
-		velocity.X = max_speed;
-	else if (velocity.X + steering.X < -max_speed)
-		velocity.X = -max_speed;
-	if (velocity.Y + steering.Y > max_speed)
-		velocity.Y = max_speed;
-	else if (velocity.Y + steering.Y < -max_speed)
-		velocity.Y = -max_speed;
-	else
-	{
-		velocity.X += steering.X;
-		velocity.Y += steering.Y;
-	}
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Vel %d %d %d"),velocity.X,velocity.Y,velocity.Z));
+	FVector acceleration = steering_force / mass;
+	
+	velocity = Truncate(velocity + acceleration, max_speed);
+	
 	newLocation.X = currentLocation.X + velocity.X * delta;
 	newLocation.Y = currentLocation.Y + velocity.Y * delta;
 	newLocation.Z = currentLocation.Z + velocity.Z * delta;
-	SetActorLocation(newLocation);*/
+	SetActorLocation(newLocation);
 }
 
+void AVehicle::Circuit(float deltaTime)
+{
+	if (path.empty())
+	{
+		int nbPoint = rand() % 50;
+		for (int i = 0; i < nbPoint; i++)
+		{
+			path.push_back(FVector( (float)i*15,(float)i*10,0 ));
+		}
+		path.push_back(path[0]);
+	}
+	if ((this->target - this->GetActorLocation()).Length() < 10)
+	{
+		if (pathIndex > path.size() + 1)pathIndex = 0;
+		this->target = path[pathIndex];
+		pathIndex++;
+	}
+	Seek(deltaTime);
+}
+void AVehicle::OneWay(float deltaTime)
+{
+	if (path.empty())
+	{
+		int nbPoint = rand() % 50;
+		for (int i = 0; i < nbPoint; i++)
+		{
+			path.push_back(FVector((float)i * 15, (float)i * 15, 0));
+		}
+	}
+	if ((this->target - this->GetActorLocation()).Length() < 10)
+	{
+		this->target = path[pathIndex];
+		pathIndex++;
+	}
+	if (pathIndex == path.size() - 1)
+		Arrival(deltaTime);
+	else Seek(deltaTime);
+}
+void AVehicle::TwoWay(float deltaTime)
+{
 
+	OneWay(deltaTime);
+	if (velocity.IsZero())
+		std::reverse(path.begin(), path.end());
+	
+}
 // Called when the game starts or when spawned
 void AVehicle::BeginPlay()
 {
 	Super::BeginPlay();
-	//APlayerController* FirstLocalPlayer = UGameplayStatics::GetPlayerController(this, 0);
-	//InputComponent->BindAction(FName("MyAction"), IE_Pressed, this, &AVehicle::OnActionPressed);
-	BindToInput();
 	this->target = FVector(100.0, 100.0, 100.0);
 	GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	player = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	
 	UE_LOG(LogTemp, Warning, TEXT("Init Vehicle"));
 }
-void AVehicle::BindToInput()
-{
-	// Initialize our component
-	InputComponent = NewObject<UInputComponent>(this);
-	InputComponent->RegisterComponent();
-	if (InputComponent)
-	{
-		// Bind inputs here
-		InputComponent->BindAction("Jump", IE_Pressed, this, &AVehicle::OnActionPressed);
-		// etc...
-		UE_LOG(LogTemp, Warning, TEXT("Input Vehicle"));
-		// Now hook up our InputComponent to one in a Player
-		// Controller, so that input flows down to us
-		EnableInput(GetWorld()->GetFirstPlayerController());
-	}
-}
+
 void AVehicle::OnActionPressed()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Key Pressed"));
@@ -249,8 +241,6 @@ void AVehicle::OnActionPressed()
 void AVehicle::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//FVector target;
-
 	switch (GI->value)
 	{
 	case StateVehicle::SEEK:
@@ -271,7 +261,15 @@ void AVehicle::Tick(float DeltaTime)
 	case StateVehicle::MOVE:
 		Move(DeltaTime);
 		break;
+	case StateVehicle::CIRCUIT:
+		Circuit(DeltaTime);
+		break;
+	case StateVehicle::ONEWAY:
+		OneWay(DeltaTime);
+		break;
+	case StateVehicle::TWOWAY:
+		TwoWay(DeltaTime);
+		break;
 	}
-
 }
 

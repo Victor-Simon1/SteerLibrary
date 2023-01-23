@@ -24,8 +24,33 @@ void NameState(StateVehicle state)
 	case StateVehicle::MOVE:
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("MOVE"));
 		break;
+	case StateVehicle::CIRCUIT:
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("CIRCUIT"));
+		break;
+	case StateVehicle::ONEWAY:
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("ONEWAY"));
+		break;
+	case StateVehicle::TWOWAY:
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("TWOWAY"));
+		break;
 	default:
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("NULL"));
+		break;
+	}
+}
+
+bool MovableState(StateVehicle state)
+{
+	switch (state)
+	{
+	case StateVehicle::SEEK: case StateVehicle::FLEE: case StateVehicle::ARRIVAL :
+		return false;
+		break;
+	case StateVehicle::PURSUE: case StateVehicle::EVADE:case StateVehicle::MOVE:
+		return true;
+		break;
+	default:
+		return false;
 		break;
 	}
 }

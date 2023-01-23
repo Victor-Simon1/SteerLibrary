@@ -6,5 +6,5 @@
 UMyGameInstance::UMyGameInstance()
 {
 	value = StateVehicle::MOVE;
-	maxValue = 6;
+	maxValue = 9;
 }

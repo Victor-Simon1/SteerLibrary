@@ -13,6 +13,7 @@ class STEER_API AMyPawn : public APawn
 
 public:
 	// Sets default values for this pawn's properties
+	FVector velocity;
 	AMyPawn();
 
 protected:

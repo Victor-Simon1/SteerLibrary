@@ -80,10 +80,16 @@ void AMyPawn::Walk()
 }
 void AMyPawn::MoveForward(float Value)
 {		
+	if(Value)
+		velocity.X += Value;
+	else velocity.X = 0;
 	MovementDirection.X = FMath::Clamp(Value, -1.0, 1.0);
 }
 void AMyPawn::MoveRight(float Value)
 {
+	if (Value)
+		velocity.Y += Value;
+	else velocity.Y = 0;
 	MovementDirection.Y = FMath::Clamp(Value, -1.0, 1.0);
 }
 

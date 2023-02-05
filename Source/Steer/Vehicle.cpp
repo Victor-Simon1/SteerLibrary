@@ -252,19 +252,21 @@ void AVehicle::TwoWay(float deltaTime)
 	}
 	if ((this->target - this->GetActorLocation()).Length() < 50)
 	{
-		this->target = pathWay[pathIndexWay];
-		pathIndexWay++;
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("phi %d"), pathIndexWay));
+		this->target = pathWay[pathIndex2Way];
+		pathIndex2Way++;
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("phi %d"), pathIndex2Way));
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("size %d"), pathWay.size()));
-		if (pathIndexWay == pathWay.size() + 1)
+		if (pathIndex2Way == pathWay.size() + 1 && !twoWay)
 		{
+			twoWay = true;
 			std::reverse(pathWay.begin(), pathWay.end());
-			pathIndex = 0;
+			
+			pathIndex2Way = 0;
 		}
 	}
-	if (pathIndexWay == pathWay.size())
+	if (pathIndex2Way == pathWay.size())
 		Arrival(deltaTime);
-	else if (pathIndexWay < pathWay.size())
+	else if (pathIndex2Way < pathWay.size())
 		Seek(deltaTime);
 	
 }

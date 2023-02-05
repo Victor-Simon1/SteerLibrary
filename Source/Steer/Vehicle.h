@@ -29,6 +29,8 @@ public:
 	std::vector<FVector> pathWay;
 	int pathIndex;
 	int pathIndexWay;
+	int pathIndex2Way;
+	bool twoWay;
 	int state;//enum
 	UMyGameInstance* GI; //= Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	APlayerController* player;

@@ -161,8 +161,11 @@ void AVehicle::Arrival(float delta)
 {
 	FVector newLocation;
 	FVector currentLocation = this->GetActorLocation();
-
-	FVector target_offset = player->GetPawn()->GetActorLocation() - currentLocation;
+	FVector target_offset;
+	if (!MovableState(GI->value))
+		target_offset = player->GetPawn()->GetActorLocation() - currentLocation;
+	else target_offset = target - currentLocation;
+	//FVector target_offset = player->GetPawn()->GetActorLocation() - currentLocation;
 	float distance = target_offset.Length();
 	float ramped_speed = max_speed * (distance / slowing_distance);
 	float clipped_speed = std::min(ramped_speed, max_speed);
@@ -182,7 +185,7 @@ void AVehicle::Arrival(float delta)
 
 void AVehicle::Circuit(float deltaTime)
 {
-	if (path.empty())
+	if (pathCircuit.empty())
 	{
 		int nbPoint = 4;//rand() % 25;
 		float phiAdd = 360 / nbPoint;
@@ -191,10 +194,10 @@ void AVehicle::Circuit(float deltaTime)
 		float r = 500.0;
 		for (int i = 0; i < nbPoint; i++)
 		{
-			path.push_back(FVector( r*cos(phi*(PI /180)), r*sin(phi * (PI / 180)), 100));
+			pathCircuit.push_back(FVector( r*cos(phi*(PI /180)), r*sin(phi * (PI / 180)), 100));
 			FRotator Rotation(0.0f, 0.0f, 0.0f);
 			FActorSpawnParameters SpawnInfo;
-			AActorCircuit* mySphere = GetWorld()->SpawnActor<AActorCircuit>( path.back(),Rotation,SpawnInfo);
+			AActorCircuit* mySphere = GetWorld()->SpawnActor<AActorCircuit>(pathCircuit.back(),Rotation,SpawnInfo);
 			phi += phiAdd;
 			//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("phi %f"), phi));
 		}
@@ -202,38 +205,67 @@ void AVehicle::Circuit(float deltaTime)
 	}
 	if ((this->target - this->GetActorLocation()).Length() < 50)
 	{
-		if (pathIndex >= path.size())pathIndex = 0;
+		if (pathIndex >= pathCircuit.size())pathIndex = 0;
 		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("phi %d"), pathIndex));
-		this->target = path[pathIndex];
+		this->target = pathCircuit[pathIndex];
 		pathIndex++;
 	}
 	Seek(deltaTime);
 }
 void AVehicle::OneWay(float deltaTime)
 {
-	if (path.empty())
+	if (pathWay.empty())
 	{
-		int nbPoint = rand() % 50;
+		int nbPoint = 8;
 		for (int i = 0; i < nbPoint; i++)
 		{
-			path.push_back(FVector((float)i * 15, (float)i * 15, 0));
+			pathWay.push_back(FVector((float)i * 200, 0, 0));
+			FRotator Rotation(0.0f, 0.0f, 0.0f);
+			FActorSpawnParameters SpawnInfo;
+			AActorCircuit* mySphere = GetWorld()->SpawnActor<AActorCircuit>(pathWay.back(), Rotation, SpawnInfo);
 		}
 	}
-	if ((this->target - this->GetActorLocation()).Length() < 10)
+	if ((this->target - this->GetActorLocation()).Length() < 50)
 	{
-		this->target = path[pathIndex];
-		pathIndex++;
+		this->target = pathWay[pathIndexWay];
+		pathIndexWay++;
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("phi %d"), pathIndexWay));
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("size %d"), pathWay.size()));
 	}
-	if (pathIndex == path.size() - 1)
+	if (pathIndexWay == pathWay.size())
 		Arrival(deltaTime);
-	else Seek(deltaTime);
+	else if(pathIndexWay < pathWay.size())
+		Seek(deltaTime);
 }
 void AVehicle::TwoWay(float deltaTime)
 {
-
-	OneWay(deltaTime);
-	if (velocity.IsZero())
-		std::reverse(path.begin(), path.end());
+	if (pathWay.empty())
+	{
+		int nbPoint = 8;
+		for (int i = 0; i < nbPoint; i++)
+		{
+			pathWay.push_back(FVector((float)i * 200, 0, 0));
+			FRotator Rotation(0.0f, 0.0f, 0.0f);
+			FActorSpawnParameters SpawnInfo;
+			AActorCircuit* mySphere = GetWorld()->SpawnActor<AActorCircuit>(pathWay.back(), Rotation, SpawnInfo);
+		}
+	}
+	if ((this->target - this->GetActorLocation()).Length() < 50)
+	{
+		this->target = pathWay[pathIndexWay];
+		pathIndexWay++;
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("phi %d"), pathIndexWay));
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("size %d"), pathWay.size()));
+		if (pathIndexWay == pathWay.size() + 1)
+		{
+			std::reverse(pathWay.begin(), pathWay.end());
+			pathIndex = 0;
+		}
+	}
+	if (pathIndexWay == pathWay.size())
+		Arrival(deltaTime);
+	else if (pathIndexWay < pathWay.size())
+		Seek(deltaTime);
 	
 }
 // Called when the game starts or when spawned

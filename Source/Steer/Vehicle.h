@@ -25,8 +25,10 @@ public:
 	FVector target;
 	float max_force;
 	float slowing_distance;
-	std::vector<FVector> path;
+	std::vector<FVector> pathCircuit;
+	std::vector<FVector> pathWay;
 	int pathIndex;
+	int pathIndexWay;
 	int state;//enum
 	UMyGameInstance* GI; //= Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	APlayerController* player;

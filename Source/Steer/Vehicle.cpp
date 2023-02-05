@@ -1,9 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "Vehicle.h"
 #include "Math/Vector.h"
+#include "Math/UnrealMathUtility.h"
 #include <iostream>
 #include <algorithm>
 #include "MyPawn.h"
+#include "ActorCircuit.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -12,7 +14,7 @@ AVehicle::AVehicle()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	max_speed = 300.0;
+	max_speed = 250.0;
 	max_force = 30.0;
 	mass = 5.0;
 	slowing_distance = 25.0;
@@ -73,7 +75,11 @@ void AVehicle::Seek(float delta)
 {
 	FVector newLocation;
 	FVector currentLocation = this->GetActorLocation();
-	FVector temp = player->GetPawn()->GetActorLocation() - currentLocation;
+	FVector temp;
+	//UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if(!MovableState(GI->value))
+		temp = player->GetPawn()->GetActorLocation() - currentLocation;
+	else temp = target - currentLocation;
 
 	FVector desired_velocity = temp * max_speed;
 	FVector steering = desired_velocity - velocity;
@@ -129,7 +135,6 @@ void AVehicle::Pursue(float delta)
 
 	velocity = Truncate(velocity + acceleration, max_speed);
 
-	//velocity *= estimation;
 	newLocation = currentLocation + velocity * delta;
 	SetActorLocation(newLocation);
 }
@@ -148,7 +153,6 @@ void AVehicle::Evade(float delta)
 	
 	velocity = Truncate(velocity + acceleration, max_speed);
 
-	//velocity *= estimation;
 	newLocation = currentLocation + velocity * delta;
 	SetActorLocation(newLocation);
 }
@@ -163,18 +167,15 @@ void AVehicle::Arrival(float delta)
 	float ramped_speed = max_speed * (distance / slowing_distance);
 	float clipped_speed = std::min(ramped_speed, max_speed);
 
-
 	FVector desired_velocity = (clipped_speed / distance) * target_offset;
-	
 	FVector steering = desired_velocity - velocity;
-
 	FVector steering_force = Truncate(steering, max_force);
-
 	FVector acceleration = steering_force / mass;
+
 	if ((velocity + acceleration).Length() > max_speed)
 		velocity = Truncate(velocity + acceleration, max_speed);
 	else velocity = velocity + acceleration;
-	//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Mode %s"), *velocity.ToString()));
+
 	newLocation = currentLocation + velocity * delta;
 	SetActorLocation(newLocation);
 }
@@ -183,16 +184,26 @@ void AVehicle::Circuit(float deltaTime)
 {
 	if (path.empty())
 	{
-		int nbPoint = rand() % 50;
+		int nbPoint = 4;//rand() % 25;
+		float phiAdd = 360 / nbPoint;
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Velo %f"), phiAdd));
+		float phi = 0;
+		float r = 500.0;
 		for (int i = 0; i < nbPoint; i++)
 		{
-			path.push_back(FVector( (float)i*15,(float)i*10,0 ));
+			path.push_back(FVector( r*cos(phi*(PI /180)), r*sin(phi * (PI / 180)), 100));
+			FRotator Rotation(0.0f, 0.0f, 0.0f);
+			FActorSpawnParameters SpawnInfo;
+			AActorCircuit* mySphere = GetWorld()->SpawnActor<AActorCircuit>( path.back(),Rotation,SpawnInfo);
+			phi += phiAdd;
+			//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("phi %f"), phi));
 		}
-		path.push_back(path[0]);
+		//path.push_back(path[0]);
 	}
-	if ((this->target - this->GetActorLocation()).Length() < 10)
+	if ((this->target - this->GetActorLocation()).Length() < 50)
 	{
-		if (pathIndex > path.size() + 1)pathIndex = 0;
+		if (pathIndex >= path.size())pathIndex = 0;
+		//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("phi %d"), pathIndex));
 		this->target = path[pathIndex];
 		pathIndex++;
 	}

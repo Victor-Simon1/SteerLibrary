@@ -46,7 +46,7 @@ bool MovableState(StateVehicle state)
 	case StateVehicle::SEEK: case StateVehicle::FLEE: case StateVehicle::ARRIVAL :
 		return false;
 		break;
-	case StateVehicle::PURSUE: case StateVehicle::EVADE:case StateVehicle::MOVE:
+	case StateVehicle::PURSUE: case StateVehicle::EVADE:case StateVehicle::MOVE: case StateVehicle::CIRCUIT:case StateVehicle::TWOWAY:case StateVehicle::ONEWAY:
 		return true;
 		break;
 	default:

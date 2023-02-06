@@ -16,14 +16,19 @@ class STEER_API AVehicle : public AActor
 	GENERATED_BODY()
 	
 public:
-
+	UPROPERTY(EditAnywhere)
 	float max_speed;
+	UPROPERTY(EditAnywhere)
 	float mass;
 	UPROPERTY(EditAnywhere)
 	FVector velocity;
+	FMatrix orientation;
+	FQuat quat;
 	UPROPERTY(EditAnywhere)
 	FVector target;
+	UPROPERTY(EditAnywhere)
 	float max_force;
+	UPROPERTY(EditAnywhere)
 	float slowing_distance;
 	std::vector<FVector> pathCircuit;
 	std::vector<FVector> pathWay;
@@ -36,7 +41,8 @@ public:
 	APlayerController* player;
 	// Sets default values for this actor's properties
 	AVehicle();
-
+	void SetOrientation();
+	void ChangeVelocity(float deltaTime,FVector steering);
 	void Seek(float delta);
 	void Flee(float delta);
 	void Pursue(float delta);

@@ -55,18 +55,8 @@ void AMyPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 void AMyPawn::ChangeModeVehicle()
 {
 	UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	GI->ChangeModeVehicles();
 	
-	if (GI)
-	{
-		if (static_cast<int>(GI->value) < GI->maxValue - 1)
-			GI->value = static_cast<StateVehicle>(static_cast<int>(GI->value)+1);
-		else GI->value = StateVehicle::MOVE;
-	}
-
-	if (GEngine)
-	{
-		NameState(GI->value);
-	}
 }
 void AMyPawn::Sprint()
 {

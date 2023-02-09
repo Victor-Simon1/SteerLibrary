@@ -31,12 +31,15 @@ public:
 	UPROPERTY(EditAnywhere)
 	float slowing_distance;
 	std::vector<FVector> pathCircuit;
+	//UPROPERTY(EditAnywhere)
 	std::vector<FVector> pathWay;
 	int pathIndex;
 	int pathIndexWay;
-	int pathIndex2Way;
+	UPROPERTY(EditAnywhere)
 	bool twoWay;
 	int state;//enum
+	UPROPERTY(EditAnywhere)
+	bool finished;
 	UMyGameInstance* GI; //= Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	APlayerController* player;
 	// Sets default values for this actor's properties
@@ -52,6 +55,7 @@ public:
 	void Circuit(float delta);
 	void OneWay(float delta);
 	void TwoWay(float delta);
+	void ResetParameters();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

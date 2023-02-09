@@ -22,4 +22,7 @@ public:
 	StateVehicle value;
 	int maxValue;
 	UMyGameInstance();
+
+	UFUNCTION()
+	void ChangeModeVehicles();
 };

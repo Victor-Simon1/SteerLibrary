@@ -123,16 +123,6 @@ void AVehicle::Pursue(float delta)
 	FVector currentLocation = this->GetActorLocation();
 
 	FVector dist = player->GetPawn()->GetActorLocation() - currentLocation ;
-	/*
-	float d = FVector::DotProduct(dynamic_cast<AMyPawn*>(player->GetPawn())->velocity,dist);
-	FVector temp = velocity;
-	FVector temp2 = dynamic_cast<AMyPawn *>(player->GetPawn())->velocity;
-	temp.Normalize(); 
-	temp2.Normalize();
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Velo %s"), *temp2.ToString()));
-	float c = FVector::DotProduct(temp,temp2 );
-
-	dist = player->GetPawn()->GetActorLocation() * (d * c) - currentLocation;*/
 	FVector desired_velocity = dist*3.0 * max_speed;
 	FVector steering = desired_velocity - velocity;
 	ChangeVelocity(delta, steering);
@@ -205,7 +195,7 @@ void AVehicle::OneWay(float deltaTime)
 			AActorCircuit* mySphere = GetWorld()->SpawnActor<AActorCircuit>(pathWay.back(), Rotation, SpawnInfo);
 		}
 	}
-	if ((this->target - this->GetActorLocation()).Length() < 50)
+	if ((this->target - this->GetActorLocation()).Length() < 50 && !(pathIndexWay == pathWay.size()))
 	{
 		this->target = pathWay[pathIndexWay];
 		pathIndexWay++;
@@ -213,9 +203,7 @@ void AVehicle::OneWay(float deltaTime)
 	if (pathIndexWay == pathWay.size())
 	{
 		Arrival(deltaTime);
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString::Printf(TEXT(" %d"), pathIndexWay));
 	}
-		
 	else if (pathIndexWay < pathWay.size())
 		Seek(deltaTime);
 	else finished = true;
@@ -240,37 +228,6 @@ void AVehicle::TwoWay(float deltaTime)
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("second way"));
 		OneWay(deltaTime);
 	}
-	/*
-	if (pathWay.empty())
-	{
-		int nbPoint = 8;
-		for (int i = 0; i < nbPoint; i++)
-		{
-			pathWay.push_back(FVector((float)i * 200, rand() % 200, 0));
-			FRotator Rotation(0.0f, 0.0f, 0.0f);
-			FActorSpawnParameters SpawnInfo;
-			AActorCircuit* mySphere = GetWorld()->SpawnActor<AActorCircuit>(pathWay.back(), Rotation, SpawnInfo);
-		}
-	}
-	if ((this->target - this->GetActorLocation()).Length() < 50)
-	{
-		this->target = pathWay[pathIndex2Way];
-
-		pathIndex2Way++;
-		if (pathIndex2Way == pathWay.size() + 1 && !twoWay)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("J'inverse"));
-			twoWay = true;
-			std::reverse(pathWay.begin(), pathWay.end());
-			pathIndex2Way = 0;
-		//	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT(pathWay[0].ToString()));
-		}
-	}
-	if (pathIndex2Way == pathWay.size())
-		Arrival(deltaTime);
-	else if (pathIndex2Way < pathWay.size())
-		Seek(deltaTime);
-	*/
 }
 // Called when the game starts or when spawned
 void AVehicle::BeginPlay()

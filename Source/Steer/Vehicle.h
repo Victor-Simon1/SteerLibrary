@@ -31,8 +31,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	float slowing_distance;
 	std::vector<FVector> pathCircuit;
-	//UPROPERTY(EditAnywhere)
 	std::vector<FVector> pathWay;
+	std::vector<FVector> path2Way;
 	int pathIndex;
 	int pathIndexWay;
 	UPROPERTY(EditAnywhere)
@@ -53,7 +53,7 @@ public:
 	void Arrival(float delta);
 	void Move(float delta);
 	void Circuit(float delta);
-	void OneWay(float delta);
+	void OneWay(float delta,std::vector<FVector> path);
 	void TwoWay(float delta);
 	void ResetParameters();
 protected:

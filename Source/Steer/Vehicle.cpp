@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "Vehicle.h"
 #include "Math/Vector.h"
+#include <vector>
 #include "Math/UnrealMathUtility.h"
 #include <iostream>
 #include <algorithm>
@@ -14,10 +15,10 @@ AVehicle::AVehicle()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	max_speed = 250.0;
-	max_force = 30.0;
-	mass = 5.0;
-	slowing_distance = 25.0;
+	max_speed = 210.0;
+	max_force = 40.0;
+	mass = 15.0;
+	slowing_distance = 100.0;
 	velocity = FVector(1.0,1.0,0.0);
 	ResetParameters();
 }
@@ -28,7 +29,7 @@ void AVehicle::ResetParameters()
 	pathIndexWay = 0;
 	finished = false;
 	twoWay = false;
-	if(!pathWay.empty())std::reverse(pathWay.begin(), pathWay.end());
+	//if(!pathWay.empty())std::reverse(pathWay.begin(), pathWay.end());
 }
 FVector Truncate(FVector v, float m)
 {
@@ -40,25 +41,15 @@ void AVehicle::SetOrientation()
 {
 	FVector new_forward = velocity;
 	new_forward.Normalize();
-	/*FVector approximate_up = FVector(orientation.M[2][0], orientation.M[2][1], orientation.M[2][2]);; // if needed
-	approximate_up.Normalize();
-	FVector new_side = FVector::CrossProduct(new_forward, approximate_up);
-	FVector new_up = FVector::CrossProduct(new_forward, new_side);
-	orientation = FMatrix(new_forward, new_side, new_up, FVector::BackwardVector);
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Velo %s"), *orientation.ToString()));
-	quat = orientation.ToQuat();
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Velo %s"), *quat.ToString()));
-	SetActorRotation(quat);*/
 	SetActorRotation(new_forward.Rotation());
 
 }
 void AVehicle::Move(float delta)
 {
-	//float acceleration = 1.0;
-	
+
 	if (FVector::Dist(this->target, this->GetActorLocation())<50)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("New Target Vehicle"));
+	//	UE_LOG(LogTemp, Warning, TEXT("New Target Vehicle"));
 		this->target = FVector(rand() % 2000, rand() % 200, 100.0);
 	}
 
@@ -78,7 +69,6 @@ void AVehicle::Move(float delta)
 	newLocation.Z = 100.0;
 	SetActorLocation(newLocation);
 	SetOrientation();
-	//SetActorLocationAndRotation(this->target,rot , false, 0, ETeleportType::None);
 }
 void AVehicle::ChangeVelocity(float deltaTime,FVector steering)
 {
@@ -164,10 +154,10 @@ void AVehicle::Circuit(float deltaTime)
 		int nbPoint =  10;
 		float phiAdd = 360 / nbPoint;
 		float phi = 0;
-		float r = 500.0;
+		float r = 800.0;
 		for (int i = 0; i < nbPoint; i++)
 		{
-			pathCircuit.push_back(FVector( r*cos(phi*(PI /180)), r*sin(phi * (PI / 180)), 100));
+			pathCircuit.push_back(FVector( r*cos(phi*(PI /180)), r*sin(phi * (PI / 180)), 100.0));
 			FRotator Rotation(0.0f, 0.0f, 0.0f);
 			FActorSpawnParameters SpawnInfo;
 			AActorCircuit* mySphere = GetWorld()->SpawnActor<AActorCircuit>(pathCircuit.back(),Rotation,SpawnInfo);
@@ -182,29 +172,35 @@ void AVehicle::Circuit(float deltaTime)
 	}
 	Seek(deltaTime);
 }
-void AVehicle::OneWay(float deltaTime)
+void AVehicle::OneWay(float deltaTime,std::vector<FVector> path)
 {
 	if (pathWay.empty())
 	{
 		int nbPoint = 8;
 		for (int i = 0; i < nbPoint; i++)
 		{
-			pathWay.push_back(FVector((float)i * 400, rand()%200, 0));
+			pathWay.push_back(FVector((float)i * 500, 1500+rand()%150, 0));
+			path2Way.push_back(pathWay.back());
 			FRotator Rotation(0.0f, 0.0f, 0.0f);
 			FActorSpawnParameters SpawnInfo;
 			AActorCircuit* mySphere = GetWorld()->SpawnActor<AActorCircuit>(pathWay.back(), Rotation, SpawnInfo);
 		}
+		std::vector<FVector> temp = pathWay;
+		std::reverse(temp.begin(), temp.end());
+		path2Way.insert(path2Way.end(), temp.begin(), temp.end());
 	}
-	if ((this->target - this->GetActorLocation()).Length() < 50 && !(pathIndexWay == pathWay.size()))
+	if ((this->target - this->GetActorLocation()).Length() < 50 && !(pathIndexWay == path.size()))
 	{
-		this->target = pathWay[pathIndexWay];
+		this->target = path[pathIndexWay];
 		pathIndexWay++;
 	}
-	if (pathIndexWay == pathWay.size())
+	if (pathIndexWay == path.size())
 	{
 		Arrival(deltaTime);
+		if((this->target - this->GetActorLocation()).Length() < 5)
+			pathIndexWay++;
 	}
-	else if (pathIndexWay < pathWay.size())
+	else if (pathIndexWay < path.size())
 		Seek(deltaTime);
 	else finished = true;
 }
@@ -213,20 +209,20 @@ void AVehicle::TwoWay(float deltaTime)
 
 	if (!twoWay)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("first way"));
-		OneWay(deltaTime);
+		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("first way"));
+	//	OneWay(deltaTime);
 		if (finished)
 		{
+			//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("second way"));
 			twoWay = true;
 			pathIndexWay = 0;
-			std::reverse(pathWay.begin(), pathWay.end());
-
+			//std::reverse(pathWay.begin(), pathWay.end());
 		}
 	}
 	else
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("second way"));
-		OneWay(deltaTime);
+	//	OneWay(deltaTime);
 	}
 }
 // Called when the game starts or when spawned
@@ -273,10 +269,10 @@ void AVehicle::Tick(float DeltaTime)
 		Circuit(DeltaTime);
 		break;
 	case StateVehicle::ONEWAY:
-		OneWay(DeltaTime);
+		OneWay(DeltaTime,pathWay);
 		break;
 	case StateVehicle::TWOWAY:
-		TwoWay(DeltaTime);
+		OneWay(DeltaTime,path2Way);
 		break;
 	}
 }

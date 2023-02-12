@@ -84,6 +84,7 @@ void AVehicle::ChangeVelocity(float deltaTime,FVector steering)
 	SetActorLocation(newLocation);
 	SetOrientation();
 }
+
 void AVehicle::Seek(float delta)
 {
 	FVector currentLocation = this->GetActorLocation();
@@ -95,9 +96,8 @@ void AVehicle::Seek(float delta)
 	FVector desired_velocity = temp * max_speed;
 	FVector steering = desired_velocity - velocity;
 	ChangeVelocity(delta, steering);
-
-	
 }
+
 void AVehicle::Flee(float delta)
 {
 	FVector currentLocation = this->GetActorLocation();

@@ -6,6 +6,8 @@
 #include <iostream>
 #include <algorithm>
 #include "MyPawn.h"
+#include "Graph.h"
+#include "Node.h"
 #include "ActorCircuit.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -70,6 +72,7 @@ void AVehicle::Move(float delta)
 	SetActorLocation(newLocation);
 	SetOrientation();
 }
+
 void AVehicle::ChangeVelocity(float deltaTime,FVector steering)
 {
 	FVector newLocation;
@@ -276,4 +279,47 @@ void AVehicle::Tick(float DeltaTime)
 		break;
 	}
 }
+template <class T>
+inline bool include_in_list(std::vector<T> list, T elem)
+{
+	return std::find(list.begin(), list.end(), elem) != list.end();
+}
+inline bool est_but(ANode node, ANode end)
+{
+	return node.id == end.id;
+}
+
+std::vector<ANode> a_star(Graph g, ANode start, ANode end) {
+	std::vector<ANode> l = std::vector<ANode>();
+	std::vector<int> ancien;
+	bool fini = false;
+	// int nb = 1;
+	while (!l.empty()){
+		if (est_but(l.back(),end)) {
+			//res = copie_taquin(l->taq);
+			fini = true;
+			break;
+		}
+		else if (include_in_list(ancien,l.back().id)) {
+			l.erase(l.begin());
+			//temp = free_premier_elem(l);
+			//l = temp;
+		}
+		else {
+			//l = taquin_succeseur(l, ancien, l->taq, &t_g, &t_d, &t_b, &t_h);
+			//l = succeseur();
+			//l = retirer_taquin_courant(l, &ancien);
+			l.erase(l.begin());
+			for each (ANode fils in g.listVertex)
+			{
+				if (!include_in_list(ancien, l.back().id))
+				{
+				}
+			}
+		}
+	}
+	return l;
+
+}
+
 

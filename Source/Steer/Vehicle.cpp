@@ -7,9 +7,10 @@
 #include <algorithm>
 #include "MyPawn.h"
 #include "Graph.h"
-#include "Node.h"
+#include "MyNode.h"
 #include "ActorCircuit.h"
 #include "Kismet/GameplayStatics.h"
+#include <regex>
 
 // Sets default values
 AVehicle::AVehicle()
@@ -280,43 +281,53 @@ void AVehicle::Tick(float DeltaTime)
 	}
 }
 template <class T>
-inline bool include_in_list(std::vector<T> list, T elem)
+inline bool include_in_list(std::vector<T> &list, T elem)
 {
 	return std::find(list.begin(), list.end(), elem) != list.end();
 }
-inline bool est_but(ANode node, ANode end)
+inline bool est_but(AMyNode &node, AMyNode &end)
 {
 	return node.id == end.id;
 }
+int lowest_cost(std::vector<AMyNode> &list,AMyNode &current)
+{
+	return ;
+}
+std::vector<AMyNode> a_star(Graph g, AMyNode start, AMyNode end) {
+	std::vector<AMyNode> l;
+	std::vector<AMyNode> ancien;
+	AMyNode current;
+	l.push_back(start);
 
-std::vector<ANode> a_star(Graph g, ANode start, ANode end) {
-	std::vector<ANode> l = std::vector<ANode>();
-	std::vector<int> ancien;
-	bool fini = false;
 	// int nb = 1;
 	while (!l.empty()){
-		if (est_but(l.back(),end)) {
-			//res = copie_taquin(l->taq);
-			fini = true;
+		int pos = lowest_cost(l,current);
+		l.erase(l.begin() + pos);
+		ancien.push_back(current);
+		if (est_but(l.back(), end)) {//path trouvé
 			break;
 		}
-		else if (include_in_list(ancien,l.back().id)) {
-			l.erase(l.begin());
-			//temp = free_premier_elem(l);
-			//l = temp;
-		}
-		else {
-			//l = taquin_succeseur(l, ancien, l->taq, &t_g, &t_d, &t_b, &t_h);
-			//l = succeseur();
-			//l = retirer_taquin_courant(l, &ancien);
-			l.erase(l.begin());
-			for each (ANode fils in g.listVertex)
+		for (auto itr = g.listVertex.begin(); itr != g.listVertex.end(); itr++)
+		{
+			if (itr->first == current.id)// on voit les voisins de current
 			{
-				if (!include_in_list(ancien, l.back().id))
+				if (!include_in_list(ancien,current)// n'appartient pas à ancien
 				{
+					if (true)//cehmin plus cour ou voisin n'est pas dans l
+					{
+						//ajout du cout du voisin
+						//ajout de parent à current
+
+						//si voisin n'et pas dans l
+						if (std::find(l.begin(), l.end(), itr->second) != l.end())
+						{
+							//l.push_back(findNodeById(itr->second));
+						}
+					}
 				}
 			}
 		}
+
 	}
 	return l;
 

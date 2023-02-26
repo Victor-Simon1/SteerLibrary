@@ -4,18 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Node.generated.h"
+#include "MyNode.generated.h"
 
 UCLASS()
-class STEER_API ANode : public AActor
+class STEER_API AMyNode : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
-
 	int id;
 	// Sets default values for this actor's properties
-	ANode();
+	AMyNode();
 
 protected:
 	// Called when the game starts or when spawned

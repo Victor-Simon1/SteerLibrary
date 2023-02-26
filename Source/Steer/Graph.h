@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Node.h"
+#include "MyNode.h"
 #include <vector>
 #include <map>
 /**
@@ -12,8 +12,8 @@
 class STEER_API Graph
 {
 public:
-	std::vector<ANode> listNode;
-	std::multimap<int, std::vector<ANode>> listVertex;
+	std::vector<AMyNode> listNode;
+	std::multimap<int, int> listVertex;
 	int nbNode;
 	Graph();
 	~Graph();

@@ -2,7 +2,7 @@
 
 
 #include "Graph.h"
-#include "Node.h"
+#include "MyNode.h"
 #include "Kismet/GameplayStatics.h"
 
 Graph::Graph()
@@ -17,7 +17,7 @@ Graph::~Graph()
 void Graph::InitGraph(UWorld* World)
 {
 	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(World, ANode::StaticClass(), FoundActors);
+	UGameplayStatics::GetAllActorsOfClass(World, AMyNode::StaticClass(), FoundActors);
 
 
 }

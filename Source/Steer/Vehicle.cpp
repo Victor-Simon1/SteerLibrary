@@ -280,8 +280,9 @@ void AVehicle::Tick(float DeltaTime)
 		break;
 	}
 }
+
 template <class T>
-inline bool include_in_list(std::vector<T> &list, T elem)
+inline bool include_in_list(std::vector<T> list, T &elem)
 {
 	return std::find(list.begin(), list.end(), elem) != list.end();
 }
@@ -289,9 +290,9 @@ inline bool est_but(AMyNode &node, AMyNode &end)
 {
 	return node.id == end.id;
 }
-int lowest_cost(std::vector<AMyNode> &list,AMyNode &current)
+int lowest_cost(std::vector<AMyNode> list,AMyNode &current)
 {
-	return ;
+	return 0 ;
 }
 std::vector<AMyNode> a_star(Graph g, AMyNode start, AMyNode end) {
 	std::vector<AMyNode> l;
@@ -311,7 +312,7 @@ std::vector<AMyNode> a_star(Graph g, AMyNode start, AMyNode end) {
 		{
 			if (itr->first == current.id)// on voit les voisins de current
 			{
-				if (!include_in_list(ancien,current)// n'appartient pas à ancien
+				if (!(std::find(ancien.begin(), ancien.end(), current) != ancien.end()))// n'appartient pas à ancien
 				{
 					if (true)//cehmin plus cour ou voisin n'est pas dans l
 					{

@@ -4,15 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include <vector>
 #include "MyNode.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class STEER_API AMyNode : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	int id;
+	std::vector<AMyNode> path;
+	std::vector<int> suiv;
 	// Sets default values for this actor's properties
 	AMyNode();
 

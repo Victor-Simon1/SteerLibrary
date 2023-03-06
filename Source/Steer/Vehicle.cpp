@@ -286,52 +286,53 @@ inline bool include_in_list(std::vector<T> list, T &elem)
 {
 	return std::find(list.begin(), list.end(), elem) != list.end();
 }
-inline bool est_but(AMyNode &node, AMyNode &end)
+inline bool est_but(AMyNode *node, AMyNode &end)
 {
-	return node.id == end.id;
+	return node->id == end.id;
 }
-int lowest_cost(std::vector<AMyNode> list,AMyNode &current)
+int lowest_cost(std::vector<AMyNode *> list,AMyNode *current)
 {
 	return 0 ;
 }
-std::vector<AMyNode> a_star(Graph g, AMyNode start, AMyNode end) {
-	std::vector<AMyNode> l;
-	std::vector<AMyNode> ancien;
-	AMyNode current;
-	l.push_back(start);
-
+std::vector<AMyNode *> a_star(Graph g, AMyNode start, AMyNode end) {
+	std::vector<AMyNode *> l;
+	std::vector<AMyNode *> ancien;
+	AMyNode* current;
+	l.push_back(&start);
+	current = &start;
 	// int nb = 1;
 	while (!l.empty()){
 		int pos = lowest_cost(l,current);
+		current = l[pos];
 		l.erase(l.begin() + pos);
 		ancien.push_back(current);
 		if (est_but(l.back(), end)) {//path trouvé
 			break;
 		}
-		for (auto itr = g.listVertex.begin(); itr != g.listVertex.end(); itr++)
+		for (Vertex vert : g.listVertex)
 		{
-			if (itr->first == current.id)// on voit les voisins de current
+
+			if (vert.n1->id == current->id)// on voit les voisins de current
 			{
 				if (!(std::find(ancien.begin(), ancien.end(), current) != ancien.end()))// n'appartient pas à ancien
 				{
-					if (true)//cehmin plus cour ou voisin n'est pas dans l
-					{
 						//ajout du cout du voisin
+						vert.n2->cost = vert.n1->cost + FVector::Dist(vert.n1->GetActorLocation(),vert.n2->GetActorLocation());
 						//ajout de parent à current
-
+						vert.n2->parent = vert.n1; 
 						//si voisin n'et pas dans l
-						if (std::find(l.begin(), l.end(), itr->second) != l.end())
+						//if (std::find(l.begin(), l.end(), vert.n2->id) != l.end())
 						{
+							l.push_back(vert.n2);
 							//l.push_back(findNodeById(itr->second));
 						}
-					}
+					
 				}
 			}
 		}
-
+		
 	}
 	return l;
-
 }
 
 

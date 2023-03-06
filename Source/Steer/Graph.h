@@ -9,11 +9,26 @@
 /**
  * 
  */
+
+
+class STEER_API Vertex
+{
+public:
+	AMyNode *n1;
+	AMyNode* n2;
+
+
+
+public:
+	Vertex();
+	Vertex(AMyNode* n1, AMyNode* n2);
+	~Vertex();
+};
 class STEER_API Graph
 {
 public:
-	std::vector<AMyNode> listNode;
-	std::multimap<int, int> listVertex;
+	std::vector<AMyNode *> listNode;
+	std::vector<Vertex> listVertex;
 	int nbNode;
 	Graph();
 	~Graph();

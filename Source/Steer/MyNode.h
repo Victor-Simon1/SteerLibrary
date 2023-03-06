@@ -13,9 +13,14 @@ class STEER_API AMyNode : public AActor
 	GENERATED_BODY()
 	
 public:	
+	UPROPERTY(EditAnywhere)
 	int id;
-	std::vector<AMyNode> path;
-	std::vector<int> suiv;
+	//UPROPERTY(EditAnywhere)
+	float cost;
+	AMyNode* parent;
+	std::vector<AMyNode *> path;
+	UPROPERTY(EditAnywhere)
+	TArray<AMyNode *> suiv;
 	// Sets default values for this actor's properties
 	AMyNode();
 

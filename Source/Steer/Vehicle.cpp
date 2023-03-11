@@ -243,15 +243,13 @@ void AVehicle::OnActionPressed()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Key Pressed"));
 }
-// Called every frame
-void AVehicle::Tick(float DeltaTime)
+
+void AVehicle::MoveTP1(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
 	if (!MovableState(GI->value)) this->target = player->GetPawn()->GetActorLocation();
 	switch (GI->value)
 	{
 	case StateVehicle::SEEK:
-		
 		Seek(DeltaTime);
 		break;
 	case StateVehicle::FLEE:
@@ -273,12 +271,23 @@ void AVehicle::Tick(float DeltaTime)
 		Circuit(DeltaTime);
 		break;
 	case StateVehicle::ONEWAY:
-		OneWay(DeltaTime,pathWay);
+		OneWay(DeltaTime, pathWay);
 		break;
 	case StateVehicle::TWOWAY:
-		OneWay(DeltaTime,path2Way);
+		OneWay(DeltaTime, path2Way);
 		break;
 	}
+}
+
+void AVehicle::MoveTP2()
+{
+
+}
+// Called every frame
+void AVehicle::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	
 }
 
 template <class T>
@@ -286,53 +295,68 @@ inline bool include_in_list(std::vector<T> list, T &elem)
 {
 	return std::find(list.begin(), list.end(), elem) != list.end();
 }
-inline bool est_but(AMyNode *node, AMyNode &end)
+inline bool est_but(AMyNode *node, AMyNode *end)
 {
-	return node->id == end.id;
+	return node == end;
 }
-int lowest_cost(std::vector<AMyNode *> list,AMyNode *current)
+AMyNode* lowest_cost(TArray<AMyNode *> list,int &pos)
 {
-	return 0 ;
+	AMyNode* minNode = list[0];
+	pos = 0;
+	for (int i = 1; i < list.Num(); i++) 
+	{
+		if (minNode->cost > list[i]->cost)
+		{
+			minNode = list[i];
+			pos = i;
+		}
+	}
+	return minNode;
 }
-std::vector<AMyNode *> a_star(Graph g, AMyNode start, AMyNode end) {
-	std::vector<AMyNode *> l;
-	std::vector<AMyNode *> ancien;
-	AMyNode* current;
-	l.push_back(&start);
-	current = &start;
+TArray<AMyNode *> AVehicle::a_star(AMyNode* start, AMyNode *end) {
+	TArray<AMyNode *> open;
+	TArray<AMyNode *> closed;
+	AMyNode* current = nullptr;
+	open.Add(start);
+	//current = start;
 	// int nb = 1;
-	while (!l.empty()){
-		int pos = lowest_cost(l,current);
-		current = l[pos];
-		l.erase(l.begin() + pos);
-		ancien.push_back(current);
-		if (est_but(l.back(), end)) {//path trouvé
+	int pos = 0;
+	while (!open.IsEmpty()){
+		current = lowest_cost(open,pos);
+		open.RemoveAt(pos);
+		
+		if (est_but(current, end)) {//path trouvé
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow,TEXT("SEEK"));
 			break;
 		}
-		for (Vertex vert : g.listVertex)
+		closed.Add(current);
+		for (AMyNode *fils : current->suiv)
 		{
-
-			if (vert.n1->id == current->id)// on voit les voisins de current
-			{
-				if (!(std::find(ancien.begin(), ancien.end(), current) != ancien.end()))// n'appartient pas à ancien
-				{
-						//ajout du cout du voisin
-						vert.n2->cost = vert.n1->cost + FVector::Dist(vert.n1->GetActorLocation(),vert.n2->GetActorLocation());
-						//ajout de parent à current
-						vert.n2->parent = vert.n1; 
-						//si voisin n'et pas dans l
-						//if (std::find(l.begin(), l.end(), vert.n2->id) != l.end())
-						{
-							l.push_back(vert.n2);
-							//l.push_back(findNodeById(itr->second));
-						}
-					
-				}
+			//if (!(std::find(closed.begin(), closed.end(), fils) != closed.end()))// n'appartient pas à ancien
+			//{
+				//ajout du cout du voisin
+			if(!closed.Contains(fils)){
+				fils->cost = current->cost + FVector::Dist(fils->GetActorLocation(),current->GetActorLocation());
+				//if (current->cost + < current->cost)
+			//	{
+					fils->path.Append(current->path);
+					fils->path.Add(current);
+					//if(!l.Contains(fils))
+					open.Add(fils);
+			//	}
+				//ajout de parent à current
+				//vert.n2->parent = vert.n1; 
+				//si voisin n'et pas dans l
+				//if (std::find(l.begin(), l.end(), vert.n2->id) != l.end())
+				//l.Add(vert.n2);
+				//l.push_back(findNodeById(itr->second));	
+				
 			}
 		}
 		
 	}
-	return l;
+	current->path.Add(current);
+	return current->path;
 }
 
 

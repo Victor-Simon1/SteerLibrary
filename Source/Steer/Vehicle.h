@@ -44,6 +44,9 @@ public:
 	APlayerController* player;
 	// Sets default values for this actor's properties
 	AVehicle();
+	UFUNCTION(BlueprintCallable)
+	void MoveTP1(float Delta);
+	void MoveTP2();
 	void SetOrientation();
 	void ChangeVelocity(float deltaTime,FVector steering);
 	void Seek(float delta);
@@ -56,6 +59,8 @@ public:
 	void OneWay(float delta,std::vector<FVector> path);
 	void TwoWay(float delta);
 	void ResetParameters();
+	UFUNCTION(BlueprintCallable)
+	TArray<AMyNode*> a_star(AMyNode *start, AMyNode *end);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

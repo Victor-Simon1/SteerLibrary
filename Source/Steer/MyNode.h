@@ -16,10 +16,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	int id;
 	//UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float cost;
 	AMyNode* parent;
-	std::vector<AMyNode *> path;
-	UPROPERTY(EditAnywhere)
+	TArray<AMyNode *> path;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	TArray<AMyNode *> suiv;
 	// Sets default values for this actor's properties
 	AMyNode();

@@ -208,6 +208,25 @@ void AVehicle::OneWay(float deltaTime,std::vector<FVector> path)
 		Seek(deltaTime);
 	else finished = true;
 }
+
+void AVehicle::OneWay2(float deltaTime, TArray<AMyNode*> path)
+{
+	if ((this->target - this->GetActorLocation()).Length() < 50 && !(pathIndexWay == path.Num()))
+	{
+		this->target = path[pathIndexWay]->GetActorLocation();
+		pathIndexWay++;
+	}
+	if (pathIndexWay == path.Num())
+	{
+		Arrival(deltaTime);
+		if ((this->target - this->GetActorLocation()).Length() < 5)
+			finishSearch = false;
+			//pathIndexWay++;
+	}
+	else if (pathIndexWay < path.Num())
+		Seek(deltaTime);
+	else finished = true;
+}
 void AVehicle::TwoWay(float deltaTime)
 {
 
@@ -233,6 +252,7 @@ void AVehicle::TwoWay(float deltaTime)
 void AVehicle::BeginPlay()
 {
 	Super::BeginPlay();
+	linkPath = false;
 	this->target = FVector(100.0, 100.0, 100.0);
 	GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	player = UGameplayStatics::GetPlayerController(GetWorld(), 0);
@@ -243,7 +263,11 @@ void AVehicle::OnActionPressed()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Key Pressed"));
 }
-
+void AVehicle::ChangeMode()
+{
+	if (mode == 2) mode = 0;
+	else mode++;
+}
 void AVehicle::MoveTP1(float DeltaTime)
 {
 	if (!MovableState(GI->value)) this->target = player->GetPawn()->GetActorLocation();
@@ -279,9 +303,88 @@ void AVehicle::MoveTP1(float DeltaTime)
 	}
 }
 
-void AVehicle::MoveTP2()
+void AVehicle::MoveTP2(float DeltaTime)
 {
+	if (finishSearch && pathToAccomplish.Num()>0 )
+	{
+		if(mode ==0)
+			OneWay2(DeltaTime, pathToAccomplish);
+	}
+}
+void AVehicle::SeveralPoint(float DeltaTime)
+{
+	if (finishSearch && pathToAccomplish.Num() > 0)
+	{
+		OneWay2(DeltaTime, pathToAccomplish);
+		
+	}
+	else if(pathToAccomplish.Num() == 0)
+	{
+		TArray<AMyNode*> tempArray;
+		if (seletectedNode[0] != currentNode)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 200.0f, FColor::Yellow, TEXT("Va au premier points"));
+			TArray<AMyNode*> temp = a_star(currentNode, seletectedNode[0]);
+			tempArray.Append(temp);
+		}
+		GEngine->AddOnScreenDebugMessage(-1, 200.0f, FColor::Yellow, TEXT("Boucle for"));
+		for (int i = 0; i < seletectedNode.Num() -1; i++)
+		{
+			if(i!=0)
+				tempArray.Add(seletectedNode[i]);
+		//	GEngine->AddOnScreenDebugMessage(-1, 200, FColor::Red, UKismetSystemLibrary::GetDisplayName(seletectedNode[i]));
+			GEngine->AddOnScreenDebugMessage(-1, 200.0f, FColor::Yellow, TEXT("Va au xieme points"));
+			if (!seletectedNode[i]->suiv.Contains(seletectedNode[i + 1]))
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 200, FColor::Red, UKismetSystemLibrary::GetDisplayName(seletectedNode[i]));
+				GEngine->AddOnScreenDebugMessage(-1, 200, FColor::Red, UKismetSystemLibrary::GetDisplayName(seletectedNode[i+1]));
+				TArray<AMyNode*> temp = a_star(seletectedNode[i], seletectedNode[i + 1]);
+				tempArray.Append(temp);
+			}
 
+		}
+		tempArray.Add(seletectedNode[seletectedNode.Num() - 1]);
+		pathToAccomplish = tempArray;
+		finishSearch = true;
+		linkPath = true;
+	}
+}
+void AVehicle::Circuit2(float DeltaTime)
+{
+	if (finishSearch && pathToAccomplish.Num() > 0)
+	{
+		if (linkPath)
+			OneWay2(DeltaTime, pathToAccomplish);
+		else
+		{
+			
+		}
+	}
+	if (pathToAccomplish.Num() == 0)
+	{
+		TArray<AMyNode*> tempArray;
+		for (int i = 0; i < pathToAccomplish.Num() - 1; i++)
+		{
+			tempArray.Add(pathToAccomplish[i]);
+			if (!pathToAccomplish[i]->suiv.Contains(pathToAccomplish[i + 1]))
+			{
+				TArray<AMyNode*> temp = a_star(pathToAccomplish[i], pathToAccomplish[i + 1]);
+				tempArray.Append(temp);
+			}
+
+		}
+		tempArray.Add(pathToAccomplish[pathToAccomplish.Num() - 1]);
+		tempArray.Append(a_star(pathToAccomplish[pathToAccomplish.Num() - 1], pathToAccomplish[0]));
+		pathToAccomplish = tempArray;
+		linkPath = true;
+	}
+}
+void AVehicle::OnePoint(float DeltaTime)
+{
+	if (finishSearch && pathToAccomplish.Num() > 0)
+	{
+		OneWay2(DeltaTime, pathToAccomplish);
+	}
 }
 // Called every frame
 void AVehicle::Tick(float DeltaTime)
@@ -313,50 +416,53 @@ AMyNode* lowest_cost(TArray<AMyNode *> list,int &pos)
 	}
 	return minNode;
 }
+#include "Kismet/KismetSystemLibrary.h"
 TArray<AMyNode *> AVehicle::a_star(AMyNode* start, AMyNode *end) {
 	TArray<AMyNode *> open;
 	TArray<AMyNode *> closed;
 	AMyNode* current = nullptr;
 	open.Add(start);
 	//current = start;
+	// 
 	// int nb = 1;
+	GEngine->AddOnScreenDebugMessage(-1, 200, FColor::Red,  UKismetSystemLibrary::GetDisplayName(start));
+	GEngine->AddOnScreenDebugMessage(-1, 200, FColor::Red,  UKismetSystemLibrary::GetDisplayName(end));
 	int pos = 0;
 	while (!open.IsEmpty()){
 		current = lowest_cost(open,pos);
 		open.RemoveAt(pos);
-		
+		GEngine->AddOnScreenDebugMessage(-1, 200, FColor::White,  UKismetSystemLibrary::GetDisplayName(current));
 		if (est_but(current, end)) {//path trouvé
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow,TEXT("SEEK"));
+
 			break;
 		}
 		closed.Add(current);
+		//GEngine->AddOnScreenDebugMessage(-1, 200, FColor::Red, FString::Printf(TEXT("Name %s"), *current->GetName()));
 		for (AMyNode *fils : current->suiv)
 		{
-			//if (!(std::find(closed.begin(), closed.end(), fils) != closed.end()))// n'appartient pas à ancien
-			//{
-				//ajout du cout du voisin
-			if(!closed.Contains(fils)){
+			float temp = current->cost + FVector::Dist(fils->GetActorLocation(), current->GetActorLocation());
+			GEngine->AddOnScreenDebugMessage(-1, 200, FColor::Red, UKismetSystemLibrary::GetDisplayName(fils));
+			if(!(closed.Contains(fils) || (open.Contains(fils)&& fils->cost < temp))){
 				fils->cost = current->cost + FVector::Dist(fils->GetActorLocation(),current->GetActorLocation());
-				//if (current->cost + < current->cost)
-			//	{
-					fils->path.Append(current->path);
-					fils->path.Add(current);
-					//if(!l.Contains(fils))
-					open.Add(fils);
-			//	}
-				//ajout de parent à current
-				//vert.n2->parent = vert.n1; 
-				//si voisin n'et pas dans l
-				//if (std::find(l.begin(), l.end(), vert.n2->id) != l.end())
-				//l.Add(vert.n2);
-				//l.push_back(findNodeById(itr->second));	
-				
+			
+				fils->path.Append(current->path);
+				fils->path.Add(current);
+				//if(!l.Contains(fils))
+				open.Add(fils);
 			}
 		}
 		
-	}
+	} 
 	current->path.Add(current);
-	return current->path;
+	TArray<AMyNode*> temp = current->path;
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMyNode::StaticClass(), FoundActors);
+	for (int i = 0; i < FoundActors.Num(); i++)
+	{
+		((AMyNode*)FoundActors[i])->path.Empty();
+	}
+	return temp;
 }
 
 

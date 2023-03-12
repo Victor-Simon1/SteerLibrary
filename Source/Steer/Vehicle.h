@@ -24,7 +24,7 @@ public:
 	FVector velocity;
 	FMatrix orientation;
 	FQuat quat;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector target;
 	UPROPERTY(EditAnywhere)
 	float max_force;

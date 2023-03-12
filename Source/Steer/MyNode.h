@@ -18,6 +18,8 @@ public:
 	//UPROPERTY(EditAnywhere)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float cost;
+	float dist;
+	float h;
 	AMyNode* parent;
 	TArray<AMyNode *> path;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)

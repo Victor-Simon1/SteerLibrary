@@ -8,6 +8,7 @@ Ensuite il faut l'ouvrir sur UE5 en le cherchant par rapport à son emplacement
 # Description 
 
 Il contient plusieurs type de mouvements
+Choisir la map TP1 dans StarterContetn/Map
 
 # Touches
 
@@ -54,10 +55,12 @@ Des cercles spawn proches 0 0 et il seek sur chacun des cercles jusqu'a arriver 
 Des cercles spawn proches 0 0 et il seek sur chacun des des cercles jusqu'a arriver au dernier
 
 ## TP2
-
-Touches
+Choisir la map MnimalDefault dans StarterContetn/Map
+# Touches
 
 P : permet de changer le mode parmis One Point / Several Point / Circuit
+Entré : valide la sélection de points
+On choisi le mode et les points, puis ensuite on valide le tout en appuyant sur entré (Ne pas cliquez sur d'autre points pendant le déplacement)
 
 # One point
 Va jusqu'au point indiqué

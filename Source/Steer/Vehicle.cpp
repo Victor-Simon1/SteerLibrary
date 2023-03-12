@@ -353,29 +353,38 @@ void AVehicle::Circuit2(float DeltaTime)
 {
 	if (finishSearch && pathToAccomplish.Num() > 0)
 	{
-		if (linkPath)
-			OneWay2(DeltaTime, pathToAccomplish);
-		else
-		{
-			
-		}
+		OneWay2(DeltaTime, pathToAccomplish);
 	}
-	if (pathToAccomplish.Num() == 0)
+	else if (pathToAccomplish.Num() == 0)
 	{
 		TArray<AMyNode*> tempArray;
-		for (int i = 0; i < pathToAccomplish.Num() - 1; i++)
+		if (seletectedNode[0] != currentNode)
 		{
-			tempArray.Add(pathToAccomplish[i]);
-			if (!pathToAccomplish[i]->suiv.Contains(pathToAccomplish[i + 1]))
+			GEngine->AddOnScreenDebugMessage(-1, 200.0f, FColor::Yellow, TEXT("Va au premier points"));
+			TArray<AMyNode*> temp = a_star(currentNode, seletectedNode[0]);
+			tempArray.Append(temp);
+		}
+		GEngine->AddOnScreenDebugMessage(-1, 200.0f, FColor::Yellow, TEXT("Boucle for"));
+		for (int i = 0; i < seletectedNode.Num() - 1; i++)
+		{
+			if (i != 0)
+				tempArray.Add(seletectedNode[i]);
+			//	GEngine->AddOnScreenDebugMessage(-1, 200, FColor::Red, UKismetSystemLibrary::GetDisplayName(seletectedNode[i]));
+			GEngine->AddOnScreenDebugMessage(-1, 200.0f, FColor::Yellow, TEXT("Va au xieme points"));
+			if (!seletectedNode[i]->suiv.Contains(seletectedNode[i + 1]))
 			{
-				TArray<AMyNode*> temp = a_star(pathToAccomplish[i], pathToAccomplish[i + 1]);
+				GEngine->AddOnScreenDebugMessage(-1, 200, FColor::Red, UKismetSystemLibrary::GetDisplayName(seletectedNode[i]));
+				GEngine->AddOnScreenDebugMessage(-1, 200, FColor::Red, UKismetSystemLibrary::GetDisplayName(seletectedNode[i + 1]));
+				TArray<AMyNode*> temp = a_star(seletectedNode[i], seletectedNode[i + 1]);
 				tempArray.Append(temp);
 			}
 
 		}
-		tempArray.Add(pathToAccomplish[pathToAccomplish.Num() - 1]);
-		tempArray.Append(a_star(pathToAccomplish[pathToAccomplish.Num() - 1], pathToAccomplish[0]));
+		tempArray.Add(seletectedNode[seletectedNode.Num() - 1]);
+		TArray<AMyNode*> temp = a_star(seletectedNode[seletectedNode.Num() - 1], seletectedNode[0]);
+		tempArray.Append(temp);
 		pathToAccomplish = tempArray;
+		finishSearch = true;
 		linkPath = true;
 	}
 }

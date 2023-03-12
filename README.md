@@ -52,3 +52,18 @@ Des cercles spawn proches 0 0 et il seek sur chacun des cercles jusqu'a arriver 
 ## Two Way
 
 Des cercles spawn proches 0 0 et il seek sur chacun des des cercles jusqu'a arriver au dernier
+
+## TP2
+
+Touches
+
+P : permet de changer le mode parmis One Point / Several Point / Circuit
+
+# One point
+Va jusqu'au point indiqué
+
+# Several Point
+Permet de chosir plusieurs point et de chercher a chaque fois les chemins si les points sont pas situé a coté
+
+# Circuit
+Pareil que several point mais avec un retour au point initial
